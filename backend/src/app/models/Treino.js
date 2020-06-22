@@ -4,7 +4,7 @@ class Treino extends Model {
   static init(sequelize) {
     super.init(
       { descricao: Sequelize.STRING },
-      { sequelize, freezeTableName: true }
+      { sequelize, tableName: 'treino' }
     );
     return this;
   }

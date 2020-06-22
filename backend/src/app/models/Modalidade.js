@@ -4,7 +4,7 @@ class Modalidade extends Model {
   static init(sequelize) {
     super.init(
       { descricao: Sequelize.STRING, valor: Sequelize.DOUBLE },
-      { sequelize }
+      { sequelize, tableName: 'modalidade' }
     );
     return this;
   }

@@ -8,6 +8,7 @@ module.exports = {
   database: process.env.DB_NAME,
   operatorAliases: false,
   define: {
+    freezeTableName: true,
     timestamps: true,
     underscored: true,
     underscoredAll: true,

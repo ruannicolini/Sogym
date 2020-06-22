@@ -2,8 +2,17 @@ import * as Yup from 'yup';
 import Treino from '../models/Treino';
 
 class TreinoController {
-  index(req, res) {
-    return res.json({ appointments: 'ok' });
+  async index(req, res) {
+    const { page = 1 } = req.query;
+    const qtdRegPag = 20;
+
+    const treinos = await Treino.findAll({
+      order: ['descricao'],
+      limit: qtdRegPag,
+      offset: (page - 1) * qtdRegPag,
+    });
+
+    return res.json(treinos);
   }
 
   async store(req, res) {
