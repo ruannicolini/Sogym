@@ -23,13 +23,9 @@ class TreinoController {
       return res.status(400).json({ error: 'Validation Fails' });
     }
 
-    console.log('Problema Aqui');
-
-    const userExists = await Treino.findOne({
+    const treinoEncontrado = await Treino.findOne({
       where: { descricao: req.body.descricao },
     });
-
-    console.log('3');
 
     if (treinoEncontrado) {
       return res.status(400).json({ error: 'Treino already exists.' });

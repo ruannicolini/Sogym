@@ -18,7 +18,7 @@ class ModalidadeController {
   async store(req, res) {
     const validador = {
       descricao: Yup.string().required(),
-      valor: Yup.required(),
+      valor: Yup.number().required().positive('Informe um número positivo.'),
     };
     const schema = Yup.object().shape(validador);
     if (!(await schema.isValid(req.body))) {
