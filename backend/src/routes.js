@@ -4,6 +4,7 @@ import GrupoController from './app/controllers/GrupoController';
 import EquipamentoController from './app/controllers/EquipamentoController';
 import PatologiaController from './app/controllers/PatologiaController';
 import ModalidadeController from './app/controllers/ModalidadeController';
+import ExercicioController from './app/controllers/ExercicioController';
 
 const routes = new Router();
 
@@ -21,5 +22,8 @@ routes.post('/patologia', PatologiaController.store);
 
 routes.get('/modalidade', ModalidadeController.index);
 routes.post('/modalidade', ModalidadeController.store);
+
+routes.get('/exercicio', ExercicioController.index);
+routes.post('/exercicio', ExercicioController.store);
 
 export default routes;

@@ -2,37 +2,26 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('exercicio', {
+    return queryInterface.createTable('equipamento_exercicio', {
       id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
-      descricao: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      modalidade_id: {
+      exercicio_id: {
         type: Sequelize.INTEGER,
-        references: { model: 'modalidade', key: 'id' },
+        references: { model: 'exercicio', key: 'id' },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-        allowNull: false,
-      },
-      grupo_exercicio_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'grupo', key: 'id' },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+        onDelete: 'RESTRICT',
         allowNull: false,
       },
       equipamento_id: {
         type: Sequelize.INTEGER,
         references: { model: 'equipamento', key: 'id' },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
-        allowNull: true,
+        onDelete: 'RESTRICT',
+        allowNull: false,
       },
       created_at: {
         type: Sequelize.DATE,
@@ -46,6 +35,6 @@ module.exports = {
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('exercicio');
+    return queryInterface.dropTable('equipamento_exercicio');
   },
 };

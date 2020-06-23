@@ -22,9 +22,10 @@ class Exercicio extends Model {
       as: 'grupo',
     });
 
-    this.belongsTo(models.Equipamento, {
+    this.belongsToMany(models.Equipamento, {
+      through: 'equipamento_exercicio',
+      as: 'equipamentos',
       foreignKey: 'equipamento_id',
-      as: 'equipamento',
     });
   }
 }

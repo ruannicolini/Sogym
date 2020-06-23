@@ -8,6 +8,14 @@ class Equipamento extends Model {
     );
     return this;
   }
+
+  static associate(models) {
+    this.belongsToMany(models.Exercicio, {
+      through: 'equipamento_exercicio',
+      as: 'exercicios',
+      foreignKey: 'exercicio_id',
+    });
+  }
 }
 
 export default Equipamento;

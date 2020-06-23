@@ -7,7 +7,7 @@ import Modalidade from '../app/models/Modalidade';
 import Treino from '../app/models/Treino';
 import Exercicio from '../app/models/Exercicio';
 
-const models = [Patologia, Equipamento, Grupo, Modalidade, Treino, Exercicio];
+const models = [Patologia, Grupo, Modalidade, Treino, Equipamento, Exercicio];
 
 class Database {
   constructor() {
