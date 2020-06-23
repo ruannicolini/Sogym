@@ -5,8 +5,15 @@ import EquipamentoController from './app/controllers/EquipamentoController';
 import PatologiaController from './app/controllers/PatologiaController';
 import ModalidadeController from './app/controllers/ModalidadeController';
 import ExercicioController from './app/controllers/ExercicioController';
+import UsuarioController from './app/controllers/UsuarioController';
+import SessionController from './app/controllers/SessionController';
 
 const routes = new Router();
+
+// routes.post('/session', SessionController.store);
+
+routes.get('/usuario', UsuarioController.index);
+routes.post('/usuario', UsuarioController.store);
 
 routes.get('/grupo', GrupoController.index);
 routes.post('/grupo', GrupoController.store);

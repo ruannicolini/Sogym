@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize';
 import databaseconfig from '../config/database';
+import Usuario from '../app/models/Usuario';
 import Grupo from '../app/models/Grupo';
 import Patologia from '../app/models/Patologia';
 import Equipamento from '../app/models/Equipamento';
@@ -7,7 +8,15 @@ import Modalidade from '../app/models/Modalidade';
 import Treino from '../app/models/Treino';
 import Exercicio from '../app/models/Exercicio';
 
-const models = [Patologia, Grupo, Modalidade, Treino, Equipamento, Exercicio];
+const models = [
+  Usuario,
+  Patologia,
+  Grupo,
+  Modalidade,
+  Treino,
+  Equipamento,
+  Exercicio,
+];
 
 class Database {
   constructor() {
