@@ -5,7 +5,7 @@ import Sequelize, { Model } from 'sequelize';
 class Exercicio extends Model {
   static init(sequelize) {
     super.init(
-      { descricao: Sequelize.STRING },
+      { descricao: Sequelize.STRING, modo_execucao: Sequelize.STRING },
       { sequelize, tableName: 'exercicio' }
     );
     return this;
