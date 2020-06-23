@@ -10,7 +10,7 @@ import SessionController from './app/controllers/SessionController';
 
 const routes = new Router();
 
-// routes.post('/session', SessionController.store);
+routes.post('/session', SessionController.store);
 
 routes.get('/usuario', UsuarioController.index);
 routes.post('/usuario', UsuarioController.store);

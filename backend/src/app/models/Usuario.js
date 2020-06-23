@@ -8,7 +8,7 @@ class Usuario extends Model {
         nome: Sequelize.STRING,
         telefone: Sequelize.STRING,
         email: Sequelize.STRING,
-        // perfil_id: Sequelize.INTEGER,
+        perfil_id: Sequelize.INTEGER,
         password: Sequelize.VIRTUAL,
         password_hash: Sequelize.STRING,
       },
@@ -22,6 +22,10 @@ class Usuario extends Model {
     });
 
     return this;
+  }
+
+  checkPassword(password) {
+    return bcrypt.compare(password, this.password_hash);
   }
 }
 
