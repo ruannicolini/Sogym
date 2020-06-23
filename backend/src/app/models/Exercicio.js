@@ -24,8 +24,7 @@ class Exercicio extends Model {
 
     this.belongsToMany(models.Equipamento, {
       through: 'equipamento_exercicio',
-      as: 'equipamentos',
-      foreignKey: 'equipamento_id',
+      as: 'Equipamentos',
     });
   }
 }

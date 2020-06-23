@@ -24,7 +24,8 @@ class ExercicioController {
         },
         {
           model: Equipamento,
-          as: 'equipamentos',
+          as: 'Equipamentos',
+          attributes: ['id', 'descricao'],
           through: { attributes: [] },
         },
       ],
@@ -77,14 +78,10 @@ class ExercicioController {
       return res.status(400).json({ error: 'Exercicio already exists.' });
     }
 
-    console.log('1');
     const exerc = await Exercicio.create(req.body);
-    console.log('2');
     if (equipamentos && equipamentos.length > 0) {
-      console.log('3');
       exerc.setEquipamentos(equipamentos);
     }
-    console.log('4');
 
     return res.json({ exerc });
   }

@@ -12,8 +12,7 @@ class Equipamento extends Model {
   static associate(models) {
     this.belongsToMany(models.Exercicio, {
       through: 'equipamento_exercicio',
-      as: 'exercicios',
-      foreignKey: 'exercicio_id',
+      as: 'Exercicios',
     });
   }
 }
