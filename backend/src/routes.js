@@ -6,6 +6,7 @@ import PatologiaController from './app/controllers/PatologiaController';
 import ModalidadeController from './app/controllers/ModalidadeController';
 import ExercicioController from './app/controllers/ExercicioController';
 import UsuarioController from './app/controllers/UsuarioController';
+import AlunoController from './app/controllers/AlunoController';
 import SessionController from './app/controllers/SessionController';
 import authMiddlewares from './app/middlewares/auth';
 
@@ -17,6 +18,11 @@ routes.use(authMiddlewares);
 
 routes.get('/usuario', UsuarioController.index);
 routes.post('/usuario', UsuarioController.store);
+
+routes.get('/aluno', AlunoController.index);
+routes.post('/aluno', AlunoController.store);
+routes.put('/aluno/:id', AlunoController.update);
+routes.delete('/aluno/:id', authMiddlewares, AlunoController.delete);
 
 routes.get('/grupo', GrupoController.index);
 routes.post('/grupo', GrupoController.store);
