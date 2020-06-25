@@ -6,6 +6,7 @@ import PatologiaController from './app/controllers/PatologiaController';
 import ModalidadeController from './app/controllers/ModalidadeController';
 import ExercicioController from './app/controllers/ExercicioController';
 import UsuarioController from './app/controllers/UsuarioController';
+import ProfessorController from './app/controllers/ProfessorController';
 import AlunoController from './app/controllers/AlunoController';
 import SessionController from './app/controllers/SessionController';
 import authMiddlewares from './app/middlewares/auth';
@@ -22,7 +23,12 @@ routes.post('/usuario', UsuarioController.store);
 routes.get('/aluno', AlunoController.index);
 routes.post('/aluno', AlunoController.store);
 routes.put('/aluno/:id', AlunoController.update);
-routes.delete('/aluno/:id', authMiddlewares, AlunoController.delete);
+routes.delete('/aluno/:id', AlunoController.delete);
+
+routes.get('/professor', ProfessorController.index);
+routes.post('/professor', ProfessorController.store);
+routes.put('/professor/:id', ProfessorController.update);
+routes.delete('/professor/:id', ProfessorController.delete);
 
 routes.get('/grupo', GrupoController.index);
 routes.post('/grupo', GrupoController.store);

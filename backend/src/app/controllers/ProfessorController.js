@@ -3,19 +3,19 @@ import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario';
 import authConfig from '../../../src/config/auth';
 
-class AlunoController {
+class ProfessorController {
   async index(req, res) {
     const { page = 1 } = req.query;
     const qtdRegPag = 20;
 
-    const usuarios = await Usuario.findAll({
-      where: { perfil_id: process.env.ALUNO },
+    const professores = await Usuario.findAll({
+      where: { perfil_id: process.env.PROFESSOR },
       order: ['nome'],
       limit: qtdRegPag,
       offset: (page - 1) * qtdRegPag,
     });
 
-    return res.json(usuarios);
+    return res.json(professores);
   }
 
   async store(req, res) {
@@ -39,11 +39,11 @@ class AlunoController {
       return res.status(400).json({ error: 'Usuario already exists.' });
     }
 
-    req.body.perfil_id = process.env.ALUNO;
+    req.body.perfil_id = process.env.PROFESSOR;
 
-    const usuarioCriado = await Usuario.create(req.body);
+    const professorCriado = await Usuario.create(req.body);
 
-    return res.json(usuarioCriado);
+    return res.json(professorCriado);
   }
 
   async update(req, res) {
@@ -68,17 +68,17 @@ class AlunoController {
 
     const { email, oldPassword } = req.body;
 
-    const usuario = await Usuario.findByPk(req.params.id);
+    const professor = await Usuario.findByPk(req.params.id);
 
-    if (!usuario) {
+    if (!professor) {
       return res.status(400).json({ error: 'Usuario not found' });
     }
 
-    if (!(usuario.perfil_id == process.env.ALUNO)) {
-      return res.status(401).json({ error: 'User is not a Aluno' });
+    if (!(professor.perfil_id == process.env.PROFESSOR)) {
+      return res.status(401).json({ error: 'User is not a Professor' });
     }
 
-    if (!(email === usuario.email)) {
+    if (!(email === professor.email)) {
       const userExists = await Usuario.findOne({ where: { email } });
       if (userExists) {
         return res
@@ -87,11 +87,11 @@ class AlunoController {
       }
     }
 
-    if (oldPassword && !(await usuario.checkPassword(oldPassword))) {
+    if (oldPassword && !(await professor.checkPassword(oldPassword))) {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
-    const { id, nome, password } = await usuario.update(req.body);
+    const { id, nome, password } = await professor.update(req.body);
 
     return res.json({
       usuario: {
@@ -108,7 +108,7 @@ class AlunoController {
 
   async delete(req, res) {
     if (!req.params.id) {
-      res.status(400).json('id aluno not found');
+      res.status(400).json('id professor not found');
     }
 
     const usuario = await Usuario.findOne({
@@ -119,8 +119,8 @@ class AlunoController {
       res.status(400).json('Usuario not found');
     }
 
-    if (!(usuario.perfil_id == process.env.ALUNO)) {
-      return res.status(401).json({ error: 'User is not a Aluno' });
+    if (!(usuario.perfil_id == process.env.PROFESSOR)) {
+      return res.status(401).json({ error: 'User is not a Professor' });
     }
 
     await usuario.destroy();
@@ -129,4 +129,4 @@ class AlunoController {
   }
 }
 
-export default new AlunoController();
+export default new ProfessorController();
