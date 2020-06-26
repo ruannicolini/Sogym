@@ -54,9 +54,9 @@ class EquipamentoController {
       });
 
       if (equipamentoExists) {
-        return res
-          .status(400)
-          .json({ error: 'Já existe um equipamento a descrição informada.' });
+        return res.status(400).json({
+          error: 'Já existe um equipamento com a descrição informada.',
+        });
       }
     }
 

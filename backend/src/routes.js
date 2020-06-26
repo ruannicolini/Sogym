@@ -30,12 +30,6 @@ routes.post('/professor', ProfessorController.store);
 routes.put('/professor/:id', ProfessorController.update);
 routes.delete('/professor/:id', ProfessorController.delete);
 
-routes.get('/grupo', GrupoController.index);
-routes.post('/grupo', GrupoController.store);
-
-routes.get('/treino', TreinoController.index);
-routes.post('/treino', TreinoController.store);
-
 routes.get('/equipamento', EquipamentoController.index);
 routes.post('/equipamento', EquipamentoController.store);
 routes.put('/equipamento/:id', EquipamentoController.update);
@@ -43,6 +37,14 @@ routes.delete('/equipamento/:id', EquipamentoController.delete);
 
 routes.get('/patologia', PatologiaController.index);
 routes.post('/patologia', PatologiaController.store);
+routes.put('/patologia/:id', PatologiaController.update);
+routes.delete('/patologia/:id', PatologiaController.delete);
+
+routes.get('/grupo', GrupoController.index);
+routes.post('/grupo', GrupoController.store);
+
+routes.get('/treino', TreinoController.index);
+routes.post('/treino', TreinoController.store);
 
 routes.get('/modalidade', ModalidadeController.index);
 routes.post('/modalidade', ModalidadeController.store);
