@@ -33,5 +33,9 @@ class PatologiaController {
     const { descricao } = await Patologia.create(req.body);
     return res.json({ descricao });
   }
+
+  async update(req, res) {}
+
+  async delete(req, res) {}
 }
 export default new PatologiaController();

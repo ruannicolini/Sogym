@@ -35,5 +35,9 @@ class TreinoController {
 
     return res.json({ descricao });
   }
+
+  async update(req, res) {}
+
+  async delete(req, res) {}
 }
 export default new TreinoController();

@@ -85,5 +85,9 @@ class ExercicioController {
 
     return res.json({ exerc });
   }
+
+  async update(req, res) {}
+
+  async delete(req, res) {}
 }
 export default new ExercicioController();

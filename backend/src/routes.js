@@ -38,6 +38,8 @@ routes.post('/treino', TreinoController.store);
 
 routes.get('/equipamento', EquipamentoController.index);
 routes.post('/equipamento', EquipamentoController.store);
+routes.put('/equipamento/:id', EquipamentoController.update);
+routes.delete('/equipamento/:id', EquipamentoController.delete);
 
 routes.get('/patologia', PatologiaController.index);
 routes.post('/patologia', PatologiaController.store);

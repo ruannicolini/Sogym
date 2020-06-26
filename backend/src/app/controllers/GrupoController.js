@@ -33,5 +33,9 @@ class GrupoController {
     const { descricao } = await Grupo.create(req.body);
     return res.json({ descricao });
   }
+
+  async update(req, res) {}
+
+  async delete(req, res) {}
 }
 export default new GrupoController();

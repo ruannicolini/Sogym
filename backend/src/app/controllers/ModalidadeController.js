@@ -36,5 +36,9 @@ class ModalidadeController {
     const { descricao } = await Modalidade.create(req.body);
     return res.json({ descricao });
   }
+
+  async update(req, res) {}
+
+  async delete(req, res) {}
 }
 export default new ModalidadeController();
