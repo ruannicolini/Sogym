@@ -41,7 +41,9 @@ routes.put('/patologia/:id', PatologiaController.update);
 routes.delete('/patologia/:id', PatologiaController.delete);
 
 routes.get('/grupo', GrupoController.index);
+routes.put('/grupo/:id', GrupoController.update);
 routes.post('/grupo', GrupoController.store);
+routes.delete('/grupo/:id', GrupoController.delete);
 
 routes.get('/treino', TreinoController.index);
 routes.post('/treino', TreinoController.store);
