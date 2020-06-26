@@ -28,8 +28,7 @@ class Usuario extends Model {
     this.belongsToMany(models.Patologia, {
       through: 'usuario_pat',
       as: 'patologias',
-
-      // OBS = Houve problemas com a nomeclatura utilizada pelo sequelize em seus join internos de associação, por isso especifiquei otherKey
+      // OBS = Houve problemas com a nomeclatura utilizada pelo sequelize em seus join internos de associação, por isso especifiquei otherKey e foreignKey nas 2 tabelas
       otherKey: {
         name: 'patologia_id',
         allowNull: false,

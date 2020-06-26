@@ -50,16 +50,11 @@ class AlunoController {
 
     req.body.perfil_id = process.env.ALUNO;
     const { patologias } = req.body;
-    console.log(patologias);
-    const usuarioCriado = await Usuario.create(req.body);
-    console.log('1');
-    if (patologias && patologias.length > 0) {
-      console.log('2');
-      usuarioCriado.setPatologias(patologias);
-      console.log('3');
-    }
-    console.log('4');
 
+    const usuarioCriado = await Usuario.create(req.body);
+    if (patologias && patologias.length > 0) {
+      usuarioCriado.setPatologias(patologias);
+    }
     return res.json(usuarioCriado);
   }
 
@@ -67,6 +62,7 @@ class AlunoController {
     const schema = Yup.object().shape({
       nome: Yup.string().required(),
       telefone: Yup.string().required(),
+      patologias: Yup.array().defined(),
       email: Yup.string().email().required(),
       oldPassword: Yup.string().min(6),
       password: Yup.string()
@@ -83,7 +79,7 @@ class AlunoController {
       return res.status(400).json({ error: 'Validation Fails' });
     }
 
-    const { email, oldPassword } = req.body;
+    const { email, oldPassword, patologias } = req.body;
 
     const usuario = await Usuario.findByPk(req.params.id);
 
@@ -109,6 +105,7 @@ class AlunoController {
     }
 
     const { id, nome, password } = await usuario.update(req.body);
+    usuario.setPatologias(patologias);
 
     return res.json({
       usuario: {
