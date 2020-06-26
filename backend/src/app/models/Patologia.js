@@ -8,6 +8,13 @@ class Patologia extends Model {
     );
     return this;
   }
+
+  static associate(models) {
+    this.belongsToMany(models.Usuario, {
+      through: 'usuario_pat',
+      as: 'incidentes',
+    });
+  }
 }
 
 export default Patologia;

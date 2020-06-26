@@ -8,6 +8,13 @@ class Modalidade extends Model {
     );
     return this;
   }
+
+  static associate(models) {
+    this.belongsToMany(models.Usuario, {
+      through: 'professor_modalidade',
+      as: 'professores',
+    });
+  }
 }
 
 export default Modalidade;

@@ -24,6 +24,28 @@ class Usuario extends Model {
     return this;
   }
 
+  static associate(models) {
+    this.belongsToMany(models.Patologia, {
+      through: 'usuario_pat',
+      as: 'patologias',
+
+      // OBS = Houve problemas com a nomeclatura utilizada pelo sequelize em seus join internos de associação, por isso especifiquei otherKey
+      otherKey: {
+        name: 'patologia_id',
+        allowNull: false,
+      },
+      foreignKey: {
+        name: 'usuario_id',
+        allowNull: false,
+      },
+    });
+
+    this.belongsToMany(models.Modalidade, {
+      through: 'professor_modalidade',
+      as: 'modalidades',
+    });
+  }
+
   checkPassword(password) {
     return bcrypt.compare(password, this.password_hash);
   }

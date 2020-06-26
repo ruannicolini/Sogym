@@ -1,7 +1,5 @@
 import Sequelize, { Model } from 'sequelize';
 
-// modalidade, grupoExercicio, Equipamento
-
 class Exercicio extends Model {
   static init(sequelize) {
     super.init(

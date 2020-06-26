@@ -1,6 +1,7 @@
 import * as Yup from 'yup';
 import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario';
+import Patologia from '../models/Patologia';
 import authConfig from '../../../src/config/auth';
 
 class AlunoController {
@@ -10,6 +11,14 @@ class AlunoController {
 
     const usuarios = await Usuario.findAll({
       where: { perfil_id: process.env.ALUNO },
+      include: [
+        {
+          model: Patologia,
+          as: 'patologias',
+          attributes: ['id', 'descricao'],
+          through: { attributes: [] },
+        },
+      ],
       order: ['nome'],
       limit: qtdRegPag,
       offset: (page - 1) * qtdRegPag,
@@ -19,10 +28,10 @@ class AlunoController {
   }
 
   async store(req, res) {
-    console.log('teste');
     const schema = Yup.object().shape({
       nome: Yup.string().required(),
       telefone: Yup.string().required(),
+      patologias: Yup.array().defined(),
       email: Yup.string().email().required(),
       password: Yup.string().required().min(6),
     });
@@ -40,8 +49,16 @@ class AlunoController {
     }
 
     req.body.perfil_id = process.env.ALUNO;
-
+    const { patologias } = req.body;
+    console.log(patologias);
     const usuarioCriado = await Usuario.create(req.body);
+    console.log('1');
+    if (patologias && patologias.length > 0) {
+      console.log('2');
+      usuarioCriado.setPatologias(patologias);
+      console.log('3');
+    }
+    console.log('4');
 
     return res.json(usuarioCriado);
   }

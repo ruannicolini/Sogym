@@ -1,6 +1,7 @@
 import * as Yup from 'yup';
 import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario';
+import Modalidade from '../models/Modalidade';
 import authConfig from '../../../src/config/auth';
 
 class ProfessorController {
@@ -10,6 +11,14 @@ class ProfessorController {
 
     const professores = await Usuario.findAll({
       where: { perfil_id: process.env.PROFESSOR },
+      include: [
+        {
+          model: Modalidade,
+          as: 'modalidades',
+          attributes: ['id', 'descricao'],
+          through: { attributes: [] },
+        },
+      ],
       order: ['nome'],
       limit: qtdRegPag,
       offset: (page - 1) * qtdRegPag,
@@ -19,11 +28,11 @@ class ProfessorController {
   }
 
   async store(req, res) {
-    console.log('teste');
     const schema = Yup.object().shape({
       nome: Yup.string().required(),
       telefone: Yup.string().required(),
       email: Yup.string().email().required(),
+      modalidades: Yup.array().defined(),
       password: Yup.string().required().min(6),
     });
 
@@ -41,7 +50,13 @@ class ProfessorController {
 
     req.body.perfil_id = process.env.PROFESSOR;
 
+    const { modalidades } = req.body;
+
     const professorCriado = await Usuario.create(req.body);
+
+    if (modalidades && modalidades.length > 0) {
+      professorCriado.setModalidades(modalidades);
+    }
 
     return res.json(professorCriado);
   }
@@ -51,6 +66,7 @@ class ProfessorController {
       nome: Yup.string().required(),
       telefone: Yup.string().required(),
       email: Yup.string().email().required(),
+      modalidades: Yup.array().defined(),
       oldPassword: Yup.string().min(6),
       password: Yup.string()
         .min(6)
@@ -66,7 +82,7 @@ class ProfessorController {
       return res.status(400).json({ error: 'Validation Fails' });
     }
 
-    const { email, oldPassword } = req.body;
+    const { email, oldPassword, modalidades } = req.body;
 
     const professor = await Usuario.findByPk(req.params.id);
 
@@ -92,7 +108,7 @@ class ProfessorController {
     }
 
     const { id, nome, password } = await professor.update(req.body);
-
+    professor.setModalidades(modalidades);
     return res.json({
       usuario: {
         id,
