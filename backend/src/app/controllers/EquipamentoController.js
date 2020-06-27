@@ -1,6 +1,7 @@
 import * as Yup from 'yup';
 import Equipamento from '../models/Equipamento';
 import Exercicio from '../models/Exercicio';
+import File from '../models/File';
 
 class EquipamentoController {
   async index(req, res) {
@@ -9,6 +10,13 @@ class EquipamentoController {
 
     const equipamentos = await Equipamento.findAll({
       order: ['descricao'],
+      include: [
+        {
+          model: File,
+          as: 'file',
+          attributes: ['nome', 'path', 'url'],
+        },
+      ],
       limit: qtdRegPag,
       offset: (page - 1) * qtdRegPag,
     });
