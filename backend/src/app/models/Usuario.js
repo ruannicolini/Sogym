@@ -43,6 +43,8 @@ class Usuario extends Model {
       through: 'professor_modalidade',
       as: 'modalidades',
     });
+
+    this.belongsTo(models.File, { foreignKey: 'file_id', as: 'file' });
   }
 
   checkPassword(password) {

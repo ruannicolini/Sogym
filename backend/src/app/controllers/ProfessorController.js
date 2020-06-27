@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import jwt from 'jsonwebtoken';
+import File from '../models/File';
 import Usuario from '../models/Usuario';
 import Modalidade from '../models/Modalidade';
 import authConfig from '../../../src/config/auth';
@@ -17,6 +18,11 @@ class ProfessorController {
           as: 'modalidades',
           attributes: ['id', 'descricao'],
           through: { attributes: [] },
+        },
+        {
+          model: File,
+          as: 'file',
+          attributes: ['nome', 'path', 'url'],
         },
       ],
       order: ['nome'],
@@ -107,12 +113,13 @@ class ProfessorController {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
-    const { id, nome, password } = await professor.update(req.body);
+    const { id, nome, password, file_id } = await professor.update(req.body);
     professor.setModalidades(modalidades);
     return res.json({
       usuario: {
         id,
         nome,
+        file_id,
         email,
         password,
       },

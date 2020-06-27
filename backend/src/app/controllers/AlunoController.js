@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import jwt from 'jsonwebtoken';
+import File from '../models/File';
 import Usuario from '../models/Usuario';
 import Patologia from '../models/Patologia';
 import authConfig from '../../../src/config/auth';
@@ -12,6 +13,11 @@ class AlunoController {
     const usuarios = await Usuario.findAll({
       where: { perfil_id: process.env.ALUNO },
       include: [
+        {
+          model: File,
+          as: 'file',
+          attributes: ['nome', 'path', 'url'],
+        },
         {
           model: Patologia,
           as: 'patologias',
