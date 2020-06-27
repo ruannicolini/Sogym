@@ -41,6 +41,7 @@ class ExercicioController {
       descricao: Yup.string().required(),
       modalidade_id: Yup.number().required(),
       grupoExercicio_id: Yup.number().required(),
+      equipamentos: Yup.array().defined(),
     };
 
     const schema = Yup.object().shape(validador);
@@ -75,7 +76,7 @@ class ExercicioController {
     });
 
     if (exercicioEncontrado) {
-      return res.status(400).json({ error: 'Exercicio already exists.' });
+      return res.status(400).json({ error: 'Exercicio já existe.' });
     }
 
     const exerc = await Exercicio.create(req.body);
@@ -86,8 +87,58 @@ class ExercicioController {
     return res.json({ exerc });
   }
 
-  async update(req, res) {}
+  async update(req, res) {
+    const validador = {
+      descricao: Yup.string().required(),
+      modalidade_id: Yup.number().required(),
+      grupoExercicio_id: Yup.number().required(),
+      equipamentos: Yup.array().defined(),
+    };
 
-  async delete(req, res) {}
+    const schema = Yup.object().shape(validador);
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation Fails' });
+    }
+
+    const { descricao } = req.body;
+
+    const exercicio = await Exercicio.findByPk(req.params.id);
+    if (!exercicio) {
+      return res.status(400).json({ error: 'Exercicio não encontrado.' });
+    }
+
+    if (!(descricao === exercicio.descricao)) {
+      const exercicioExists = await Exercicio.findOne({
+        where: { descricao },
+      });
+
+      if (exercicioExists) {
+        return res.status(400).json({
+          error: 'Já existe um exercicio com a descrição informada.',
+        });
+      }
+    }
+
+    await exercicio.update(req.body);
+    return res.json(exercicio);
+  }
+
+  async delete(req, res) {
+    if (!req.params.id) {
+      res.status(400).json('Parametro id exercicio não recebido');
+    }
+
+    const exercicio = await Exercicio.findOne({
+      where: { id: req.params.id },
+    });
+
+    if (!exercicio) {
+      res.status(400).json('Exercicio não encontrado');
+    }
+
+    await exercicio.destroy();
+
+    return res.send();
+  }
 }
 export default new ExercicioController();

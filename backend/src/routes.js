@@ -17,8 +17,8 @@ routes.post('/session', SessionController.store);
 
 routes.use(authMiddlewares);
 
-routes.get('/usuario', UsuarioController.index);
-routes.post('/usuario', UsuarioController.store);
+// routes.get('/usuario', UsuarioController.index);
+// routes.post('/usuario', UsuarioController.store);
 
 routes.get('/aluno', AlunoController.index);
 routes.post('/aluno', AlunoController.store);
@@ -57,5 +57,7 @@ routes.delete('/modalidade/:id', ModalidadeController.delete);
 
 routes.get('/exercicio', ExercicioController.index);
 routes.post('/exercicio', ExercicioController.store);
+routes.put('/exercicio/:id', ExercicioController.update);
+routes.delete('/exercicio/:id', ExercicioController.delete);
 
 export default routes;
