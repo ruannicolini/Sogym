@@ -52,6 +52,8 @@ routes.delete('/treino/:id', TreinoController.delete);
 
 routes.get('/modalidade', ModalidadeController.index);
 routes.post('/modalidade', ModalidadeController.store);
+routes.put('/modalidade/:id', ModalidadeController.update);
+routes.delete('/modalidade/:id', ModalidadeController.delete);
 
 routes.get('/exercicio', ExercicioController.index);
 routes.post('/exercicio', ExercicioController.store);
