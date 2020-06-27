@@ -10,6 +10,7 @@ class Equipamento extends Model {
   }
 
   static associate(models) {
+    this.belongsTo(models.File, { foreignKey: 'file_id', as: 'file' });
     this.belongsToMany(models.Exercicio, {
       through: 'equipamento_exercicio',
       as: 'exercicios',

@@ -1,24 +1,30 @@
 import { Router } from 'express';
+import multer from 'multer';
+import multerConfig from './config/multer';
 import TreinoController from './app/controllers/TreinoController';
 import GrupoController from './app/controllers/GrupoController';
 import EquipamentoController from './app/controllers/EquipamentoController';
 import PatologiaController from './app/controllers/PatologiaController';
 import ModalidadeController from './app/controllers/ModalidadeController';
 import ExercicioController from './app/controllers/ExercicioController';
-import UsuarioController from './app/controllers/UsuarioController';
 import ProfessorController from './app/controllers/ProfessorController';
 import AlunoController from './app/controllers/AlunoController';
+import FileController from './app/controllers/FileController';
 import SessionController from './app/controllers/SessionController';
 import authMiddlewares from './app/middlewares/auth';
 
 const routes = new Router();
+const upload = multer(multerConfig);
 
 routes.post('/session', SessionController.store);
 
 routes.use(authMiddlewares);
 
+// import UsuarioController from './app/controllers/UsuarioController';
 // routes.get('/usuario', UsuarioController.index);
 // routes.post('/usuario', UsuarioController.store);
+
+routes.post('/file', upload.single('file'), FileController.store);
 
 routes.get('/aluno', AlunoController.index);
 routes.post('/aluno', AlunoController.store);
