@@ -24,6 +24,11 @@ class Exercicio extends Model {
       through: 'equipamento_exercicio',
       as: 'Equipamentos',
     });
+
+    this.belongsToMany(models.FichaPadrao, {
+      through: 'ficha_padrao_exercicio',
+      as: 'fichasPadrao',
+    });
   }
 }
 

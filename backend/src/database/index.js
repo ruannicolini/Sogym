@@ -8,6 +8,8 @@ import Equipamento from '../app/models/Equipamento';
 import Modalidade from '../app/models/Modalidade';
 import Treino from '../app/models/Treino';
 import Exercicio from '../app/models/Exercicio';
+import FichaPadrao from '../app/models/FichaPadrao';
+import FichaPadraoExercicio from '../app/models/FichaPadraoExercicio';
 
 const models = [
   File,
@@ -16,8 +18,10 @@ const models = [
   Grupo,
   Modalidade,
   Treino,
+  FichaPadrao,
   Equipamento,
   Exercicio,
+  FichaPadraoExercicio,
 ];
 
 class Database {

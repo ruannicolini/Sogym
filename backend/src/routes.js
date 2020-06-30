@@ -10,6 +10,7 @@ import ExercicioController from './app/controllers/ExercicioController';
 import ProfessorController from './app/controllers/ProfessorController';
 import AlunoController from './app/controllers/AlunoController';
 import FileController from './app/controllers/FileController';
+import FichaPadraoController from './app/controllers/FichaPadraoController';
 import SessionController from './app/controllers/SessionController';
 import authMiddlewares from './app/middlewares/auth';
 
@@ -65,5 +66,10 @@ routes.get('/exercicio', ExercicioController.index);
 routes.post('/exercicio', ExercicioController.store);
 routes.put('/exercicio/:id', ExercicioController.update);
 routes.delete('/exercicio/:id', ExercicioController.delete);
+
+routes.get('/ficha_padrao', FichaPadraoController.index);
+routes.post('/ficha_padrao', FichaPadraoController.store);
+// routes.put('/ficha_padrao/:id', FichaPadraoController.update);
+// routes.delete('/ficha_padrao/:id', FichaPadraoController.delete);
 
 export default routes;
