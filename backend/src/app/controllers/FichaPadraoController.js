@@ -6,14 +6,46 @@ import Treino from '../models/Treino';
 import FichaPadraoExercicio from '../models/FichaPadraoExercicio';
 import Exercicio from '../models/Exercicio';
 
+import Grupo from '../models/Grupo';
+import Equipamento from '../models/Equipamento';
+
 class FichaPadraoController {
   async index(req, res) {
     const { page = 1 } = req.query;
     const qtdRegPag = 20;
 
     const fichas = await FichaPadrao.findAll({
-      include: [],
-      order: ['descricao'],
+      // const fichas = await FichaPadrao.findByPk(29, {
+      attributes: ['id', 'descricao'],
+      include: [
+        {
+          model: Modalidade,
+          as: 'modalidade',
+          attributes: ['id', 'descricao'],
+        },
+        {
+          model: Usuario,
+          as: 'professor',
+          attributes: ['id', 'nome'],
+        },
+        {
+          model: FichaPadraoExercicio,
+          as: 'ficha',
+          attributes: ['obs_execucao'],
+          include: [
+            {
+              model: Exercicio,
+              attributes: ['id', 'descricao', 'modo_execucao'],
+              include: [
+                { model: Grupo, as: 'grupo', attributes: ['id', 'descricao'] },
+              ],
+            },
+            { model: Treino, attributes: ['id', 'descricao'] },
+          ],
+        },
+      ],
+      // order: ['descricao'],
+      order: ['Treino.id'],
       limit: qtdRegPag,
       offset: (page - 1) * qtdRegPag,
     });
@@ -32,7 +64,7 @@ class FichaPadraoController {
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validation Fails' });
     }
-
+    console.log('1');
     const fpEncontrada = await FichaPadrao.findOne({
       where: { descricao: req.body.descricao },
     });

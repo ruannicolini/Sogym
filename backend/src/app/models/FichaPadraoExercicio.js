@@ -14,17 +14,15 @@ class FichaPadraoExercicio extends Model {
   static associate(models) {
     this.belongsTo(models.Treino, {
       foreignKey: 'treino_id',
-      as: 'treino',
     });
 
     this.belongsTo(models.FichaPadrao, {
       foreignKey: 'ficha_padrao_id',
-      as: 'ficha',
+      as: 'fichaPadrao',
     });
 
     this.belongsTo(models.Exercicio, {
       foreignKey: 'exercicio_id',
-      as: 'exercicios',
     });
   }
 }

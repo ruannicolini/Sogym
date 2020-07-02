@@ -13,8 +13,10 @@ class FichaPadrao extends Model {
   }
 
   static associate(models) {
+    this.hasMany(models.FichaPadraoExercicio, { as: 'ficha' });
+
     this.belongsToMany(models.Exercicio, {
-      through: 'ficha_padrao_exercicio',
+      through: models.FichaPadraoExercicio,
       as: 'exercicios',
     });
 

@@ -26,7 +26,7 @@ class Exercicio extends Model {
     });
 
     this.belongsToMany(models.FichaPadrao, {
-      through: 'ficha_padrao_exercicio',
+      through: models.FichaPadraoExercicio,
       as: 'fichasPadrao',
     });
   }
