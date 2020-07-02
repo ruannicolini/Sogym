@@ -121,6 +121,24 @@ class FichaPadraoController {
 
     return res.json(fichaCriada.descricao);
   }
+
+  async delete(req, res) {
+    if (!req.params.id) {
+      res.status(400).json('Parametro id ficha padrao não recebido');
+    }
+
+    const fp = await FichaPadrao.findOne({
+      where: { id: req.params.id },
+    });
+
+    if (!fp) {
+      res.status(400).json('Ficha padrão não encontrado');
+    }
+
+    await fp.destroy();
+
+    return res.send();
+  }
 }
 
 export default new FichaPadraoController();
