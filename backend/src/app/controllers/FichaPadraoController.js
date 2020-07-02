@@ -44,8 +44,7 @@ class FichaPadraoController {
           ],
         },
       ],
-      // order: ['descricao'],
-      order: ['Treino.id'],
+      order: ['descricao'],
       limit: qtdRegPag,
       offset: (page - 1) * qtdRegPag,
     });
