@@ -69,7 +69,7 @@ routes.delete('/exercicio/:id', ExercicioController.delete);
 
 routes.get('/ficha_padrao', FichaPadraoController.index);
 routes.post('/ficha_padrao', FichaPadraoController.store);
-// routes.put('/ficha_padrao/:id', FichaPadraoController.update);
+routes.put('/ficha_padrao/:id', FichaPadraoController.update);
 routes.delete('/ficha_padrao/:id', FichaPadraoController.delete);
 
 export default routes;

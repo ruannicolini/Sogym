@@ -15,7 +15,6 @@ class FichaPadraoController {
     const qtdRegPag = 20;
 
     const fichas = await FichaPadrao.findAll({
-      // const fichas = await FichaPadrao.findByPk(29, {
       attributes: ['id', 'descricao'],
       include: [
         {
@@ -63,7 +62,7 @@ class FichaPadraoController {
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validation Fails' });
     }
-    console.log('1');
+
     const fpEncontrada = await FichaPadrao.findOne({
       where: { descricao: req.body.descricao },
     });
@@ -122,6 +121,95 @@ class FichaPadraoController {
     return res.json(fichaCriada.descricao);
   }
 
+  async update(req, res) {
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required(),
+      modalidade_id: Yup.number().required(),
+      professor_id: Yup.number().defined(),
+      ficha: Yup.array().defined(),
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Validation Fails' });
+    }
+
+    const fpEncontrada = await FichaPadrao.findByPk(req.params.id, {
+      include: [{ model: Exercicio, as: 'exercicios' }],
+    });
+    if (!fpEncontrada) {
+      return res.status(400).json({ error: 'Ficha padrão não encontrada.' });
+    }
+
+    const { descricao } = req.body;
+    if (!(descricao === fpEncontrada.descricao)) {
+      const fpExists = await FichaPadrao.findOne({
+        where: { descricao },
+      });
+
+      if (fpExists) {
+        return res.status(400).json({
+          error: 'Já existe uma ficha padrão com a descrição informada.',
+        });
+      }
+    }
+
+    const modalidade = await Modalidade.findOne({
+      where: { id: req.body.modalidade_id },
+    });
+
+    if (!modalidade) {
+      return res.status(400).json({ error: 'Modalidade não localizada' });
+    }
+
+    const professor = await Usuario.findOne({
+      where: { id: req.body.professor_id, perfil_id: process.env.PROFESSOR },
+    });
+
+    if (!professor) {
+      return res.status(400).json({ error: 'Professor não localizado' });
+    }
+
+    //Valida novos itens Exercício
+    const listaExercicio = [];
+    for (const item of req.body.ficha) {
+      const treino = await Treino.findByPk(item.treino_id);
+      if (!treino) {
+        return res.status(400).json({
+          error: 'Treino COD ' + item.treino_id + ' não localizado',
+        });
+      }
+
+      for (const exerc of item.exercicios) {
+        const exercicio = await Exercicio.findByPk(exerc.exercicio_id);
+        if (!exercicio) {
+          return res.status(400).json({
+            error: 'Exercicio COD ' + exerc.exercicio_id + ' não localizado',
+          });
+        }
+
+        const fpe = {
+          ficha_padrao_id: fpEncontrada.id,
+          treino_id: item.treino_id,
+          exercicio_id: exerc.exercicio_id,
+          obs_execucao: exerc.obs_execucao,
+        };
+
+        listaExercicio.push(fpe);
+      }
+    }
+
+    const exct = await fpEncontrada.getExercicios();
+    fpEncontrada.removeExercicios(exct);
+
+    listaExercicio.map((v) => {
+      FichaPadraoExercicio.create(v);
+    });
+
+    fpEncontrada.update(req.body);
+
+    return res.json(descricao);
+  }
+
   async delete(req, res) {
     if (!req.params.id) {
       res.status(400).json('Parametro id ficha padrao não recebido');
@@ -135,7 +223,9 @@ class FichaPadraoController {
       res.status(400).json('Ficha padrão não encontrado');
     }
 
-    await fp.destroy();
+    fp.removeExercicios(exct);
+
+    fp.destroy();
 
     return res.send();
   }
