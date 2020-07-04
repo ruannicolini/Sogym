@@ -6,6 +6,8 @@ import Treino from '../models/Treino';
 import FichaPadraoExercicio from '../models/FichaPadraoExercicio';
 import Exercicio from '../models/Exercicio';
 
+import Database from '../../database';
+
 import Grupo from '../models/Grupo';
 import Equipamento from '../models/Equipamento';
 
@@ -198,14 +200,19 @@ class FichaPadraoController {
       }
     }
 
-    const exct = await fpEncontrada.getExercicios();
-    fpEncontrada.removeExercicios(exct);
-
-    listaExercicio.map((v) => {
-      FichaPadraoExercicio.create(v);
-    });
-
-    fpEncontrada.update(req.body);
+    const t = await Database.connection.transaction();
+    try {
+      const exct = await fpEncontrada.getExercicios();
+      await fpEncontrada.removeExercicios(exct, { transaction: t });
+      listaExercicio.map((v) => {
+        FichaPadraoExercicio.create(v, { transaction: t });
+      });
+      await fpEncontrada.update(req.body, { transaction: t });
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      return res.status(500).send();
+    }
 
     return res.json(descricao);
   }
@@ -223,9 +230,16 @@ class FichaPadraoController {
       res.status(400).json('Ficha padrão não encontrado');
     }
 
-    fp.removeExercicios(exct);
-
-    fp.destroy();
+    const t = await Database.connection.transaction();
+    try {
+      const exct = await fp.getExercicios();
+      await fp.removeExercicios(exct, { transaction: t });
+      await fp.destroy({ transaction: t });
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      return res.status(500).send();
+    }
 
     return res.send();
   }
