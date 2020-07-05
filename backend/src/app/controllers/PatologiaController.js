@@ -66,10 +66,6 @@ class PatologiaController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('Parametro id patologia não recebido');
-    }
-
     const patologia = await Patologia.findOne({
       where: { id: req.params.id },
       include: [

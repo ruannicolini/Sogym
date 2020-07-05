@@ -127,10 +127,6 @@ class AlunoController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('id aluno not found');
-    }
-
     const usuario = await Usuario.findOne({
       where: { id: req.params.id },
     });

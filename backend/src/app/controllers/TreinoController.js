@@ -66,10 +66,6 @@ class TreinoController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('Parametro id treino não recebido');
-    }
-
     const treino = await Treino.findOne({
       where: { id: req.params.id },
     });

@@ -124,10 +124,6 @@ class ExercicioController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('Parametro id exercicio não recebido');
-    }
-
     const exercicio = await Exercicio.findOne({
       where: { id: req.params.id },
     });

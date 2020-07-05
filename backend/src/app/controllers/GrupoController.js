@@ -65,10 +65,6 @@ class GrupoController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('Parametro id grupo não recebido');
-    }
-
     const grupo = await Grupo.findOne({
       where: { id: req.params.id },
     });

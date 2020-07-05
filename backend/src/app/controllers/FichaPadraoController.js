@@ -5,11 +5,10 @@ import Usuario from '../models/Usuario';
 import Treino from '../models/Treino';
 import FichaPadraoExercicio from '../models/FichaPadraoExercicio';
 import Exercicio from '../models/Exercicio';
-
-import Database from '../../database';
-
 import Grupo from '../models/Grupo';
 import Equipamento from '../models/Equipamento';
+
+import Database from '../../database';
 
 class FichaPadraoController {
   async index(req, res) {
@@ -218,10 +217,6 @@ class FichaPadraoController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('Parametro id ficha padrao não recebido');
-    }
-
     const fp = await FichaPadrao.findOne({
       where: { id: req.params.id },
     });

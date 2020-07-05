@@ -71,10 +71,6 @@ class ModalidadeController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('Parametro id modalidade não recebido');
-    }
-
     const modalidade = await Modalidade.findOne({
       where: { id: req.params.id },
     });

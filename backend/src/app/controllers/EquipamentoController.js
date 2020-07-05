@@ -73,10 +73,6 @@ class EquipamentoController {
   }
 
   async delete(req, res) {
-    if (!req.params.id) {
-      res.status(400).json('parametro id Equipamento não recebido');
-    }
-
     const equipamento = await Equipamento.findOne({
       where: { id: req.params.id },
       include: [
