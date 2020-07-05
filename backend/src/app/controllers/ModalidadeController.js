@@ -66,8 +66,7 @@ class ModalidadeController {
       }
     }
 
-    await modalidade.update(req.body);
-    return res.json(modalidade);
+    return res.json(await modalidade.update(req.body));
   }
 
   async delete(req, res) {

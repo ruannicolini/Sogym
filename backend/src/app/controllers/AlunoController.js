@@ -136,7 +136,7 @@ class AlunoController {
     }
 
     if (!(usuario.perfil_id == process.env.ALUNO)) {
-      return res.status(401).json({ error: 'User is not a Aluno' });
+      return res.status(401).json({ error: 'Usuário não é um Aluno' });
     }
 
     await usuario.destroy();

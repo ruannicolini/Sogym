@@ -84,7 +84,7 @@ class ExercicioController {
       exerc.setEquipamentos(equipamentos);
     }
 
-    return res.json({ exerc });
+    return res.json(exerc);
   }
 
   async update(req, res) {
@@ -119,8 +119,7 @@ class ExercicioController {
       }
     }
 
-    await exercicio.update(req.body);
-    return res.json(exercicio);
+    return res.json(await exercicio.update(req.body));
   }
 
   async delete(req, res) {

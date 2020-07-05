@@ -115,11 +115,11 @@ class FichaPadraoController {
           obs_execucao: exerc.obs_execucao,
         };
 
-        const fichaPadraoExerc = await FichaPadraoExercicio.create(fpe);
+        FichaPadraoExercicio.create(fpe);
       }
     }
 
-    return res.json(fichaCriada.descricao);
+    return res.json({ descricao: fichaCriada.descricao });
   }
 
   async update(req, res) {
@@ -213,7 +213,7 @@ class FichaPadraoController {
       return res.status(500).send();
     }
 
-    return res.json(descricao);
+    return res.json({ descricao: descricao });
   }
 
   async delete(req, res) {

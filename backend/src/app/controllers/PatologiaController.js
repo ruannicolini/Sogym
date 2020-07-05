@@ -31,8 +31,8 @@ class PatologiaController {
       return res.status(400).json({ error: 'Patologia já existe.' });
     }
 
-    const { descricao } = await Patologia.create(req.body);
-    return res.json({ descricao });
+    const patologia = await Patologia.create(req.body);
+    return res.json(patologia);
   }
 
   async update(req, res) {
@@ -61,8 +61,7 @@ class PatologiaController {
       }
     }
 
-    await patologia.update(req.body);
-    return res.json({ descricao });
+    return res.json(await patologia.update(req.body));
   }
 
   async delete(req, res) {

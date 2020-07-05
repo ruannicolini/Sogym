@@ -38,8 +38,8 @@ class EquipamentoController {
       return res.status(400).json({ error: 'Equipamento já existe.' });
     }
 
-    const { descricao } = await Equipamento.create(req.body);
-    return res.json({ descricao });
+    const equipamento = await Equipamento.create(req.body);
+    return res.json(equipamento);
   }
 
   async update(req, res) {
@@ -68,8 +68,7 @@ class EquipamentoController {
       }
     }
 
-    await equipamento.update(req.body);
-    return res.json({ descricao });
+    return res.json(await equipamento.update(req.body));
   }
 
   async delete(req, res) {

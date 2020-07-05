@@ -30,9 +30,9 @@ class TreinoController {
       return res.status(400).json({ error: 'Treino já existe.' });
     }
 
-    const { descricao } = await Treino.create(req.body);
+    const treino = await Treino.create(req.body);
 
-    return res.json({ descricao });
+    return res.json(treino);
   }
 
   async update(req, res) {
@@ -61,8 +61,7 @@ class TreinoController {
       }
     }
 
-    await treino.update(req.body);
-    return res.json({ descricao });
+    return res.json(await treino.update(req.body));
   }
 
   async delete(req, res) {

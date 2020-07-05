@@ -30,8 +30,8 @@ class GrupoController {
       return res.status(400).json({ error: 'Grupo já existe.' });
     }
 
-    const { descricao } = await Grupo.create(req.body);
-    return res.json({ descricao });
+    const grupo = await Grupo.create(req.body);
+    return res.json(grupo);
   }
 
   async update(req, res) {
@@ -61,7 +61,8 @@ class GrupoController {
     }
 
     await grupo.update(req.body);
-    return res.json({ descricao });
+
+    return res.json(grupo);
   }
 
   async delete(req, res) {
