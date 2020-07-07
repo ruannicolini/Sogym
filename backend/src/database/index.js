@@ -1,5 +1,6 @@
 import Sequelize from 'sequelize';
 import databaseconfig from '../config/database';
+import Perfil from '../app/models/Perfil';
 import Usuario from '../app/models/Usuario';
 import Grupo from '../app/models/Grupo';
 import File from '../app/models/File';
@@ -13,6 +14,7 @@ import FichaPadraoExercicio from '../app/models/FichaPadraoExercicio';
 
 const models = [
   File,
+  Perfil,
   Usuario,
   Patologia,
   Grupo,

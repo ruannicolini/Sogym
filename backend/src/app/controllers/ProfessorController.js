@@ -15,7 +15,7 @@ class ProfessorController {
       include: [
         {
           model: Modalidade,
-          as: 'modalidades',
+          as: 'modalidadesEnsino',
           attributes: ['id', 'descricao'],
           through: { attributes: [] },
         },
@@ -38,7 +38,7 @@ class ProfessorController {
       nome: Yup.string().required(),
       telefone: Yup.string().required(),
       email: Yup.string().email().required(),
-      modalidades: Yup.array().defined(),
+      modalidadesEnsino: Yup.array().defined(),
       password: Yup.string().required().min(6),
     });
 
@@ -56,12 +56,22 @@ class ProfessorController {
 
     req.body.perfil_id = process.env.PROFESSOR;
 
-    const { modalidades } = req.body;
+    const { modalidadesEnsino } = req.body;
+
+    if (modalidadesEnsino && modalidadesEnsino.length > 0) {
+      for (const item of req.body.modalidadesEnsino) {
+        const modTeste = await Modalidade.findByPk(item);
+        if (!modTeste) {
+          return res
+            .status(400)
+            .json({ error: 'Modalidade Informada não localizada' });
+        }
+      }
+    }
 
     const professorCriado = await Usuario.create(req.body);
-
-    if (modalidades && modalidades.length > 0) {
-      professorCriado.setModalidades(modalidades);
+    if (modalidadesEnsino && modalidadesEnsino.length > 0) {
+      professorCriado.setModalidadesEnsino(modalidadesEnsino);
     }
 
     return res.json(professorCriado);
@@ -72,7 +82,7 @@ class ProfessorController {
       nome: Yup.string().required(),
       telefone: Yup.string().required(),
       email: Yup.string().email().required(),
-      modalidades: Yup.array().defined(),
+      modalidadesEnsino: Yup.array().defined(),
       oldPassword: Yup.string().min(6),
       password: Yup.string()
         .min(6)
@@ -88,7 +98,7 @@ class ProfessorController {
       return res.status(400).json({ error: 'Validation Fails' });
     }
 
-    const { email, oldPassword, modalidades } = req.body;
+    const { email, oldPassword, modalidadesEnsino } = req.body;
 
     const professor = await Usuario.findByPk(req.params.id);
 
@@ -113,8 +123,21 @@ class ProfessorController {
       return res.status(401).json({ error: 'Password does not match' });
     }
 
+    if (modalidadesEnsino && modalidadesEnsino.length > 0) {
+      for (const item of req.body.modalidadesEnsino) {
+        const modTeste = await Modalidade.findByPk(item);
+        if (!modTeste) {
+          return res
+            .status(400)
+            .json({ error: 'Modalidade Informada não localizada' });
+        }
+      }
+    }
+
     const { id, nome, password, file_id } = await professor.update(req.body);
-    professor.setModalidades(modalidades);
+
+    professor.setModalidadesEnsino(modalidadesEnsino);
+
     return res.json({
       usuario: {
         id,

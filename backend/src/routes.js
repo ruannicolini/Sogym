@@ -7,6 +7,7 @@ import EquipamentoController from './app/controllers/EquipamentoController';
 import PatologiaController from './app/controllers/PatologiaController';
 import ModalidadeController from './app/controllers/ModalidadeController';
 import ExercicioController from './app/controllers/ExercicioController';
+import UsuarioController from './app/controllers/UsuarioController';
 import ProfessorController from './app/controllers/ProfessorController';
 import AlunoController from './app/controllers/AlunoController';
 import FileController from './app/controllers/FileController';
@@ -21,9 +22,10 @@ routes.post('/session', SessionController.store);
 
 routes.use(authMiddlewares);
 
-// import UsuarioController from './app/controllers/UsuarioController';
-// routes.get('/usuario', UsuarioController.index);
-// routes.post('/usuario', UsuarioController.store);
+routes.get('/usuario', UsuarioController.index);
+routes.post('/usuario', UsuarioController.store);
+routes.put('/usuario/:id', UsuarioController.update);
+routes.delete('/usuario/:id', UsuarioController.delete);
 
 routes.post('/file', upload.single('file'), FileController.store);
 

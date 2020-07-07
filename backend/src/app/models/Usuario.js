@@ -25,6 +25,19 @@ class Usuario extends Model {
   }
 
   static associate(models) {
+    this.belongsToMany(models.Perfil, {
+      through: 'usuario_perfil',
+      as: 'perfis',
+      otherKey: {
+        name: 'perfil_id',
+        allowNull: false,
+      },
+      foreignKey: {
+        name: 'usuario_id',
+        allowNull: false,
+      },
+    });
+
     this.belongsToMany(models.Patologia, {
       through: 'usuario_pat',
       as: 'patologias',
@@ -41,7 +54,7 @@ class Usuario extends Model {
 
     this.belongsToMany(models.Modalidade, {
       through: 'professor_modalidade',
-      as: 'modalidades',
+      as: 'modalidadesEnsino',
     });
 
     this.belongsTo(models.File, { foreignKey: 'file_id', as: 'file' });
