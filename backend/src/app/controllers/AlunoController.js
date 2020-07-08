@@ -1,6 +1,8 @@
 import * as Yup from 'yup';
+import Sequelize, { Op } from 'sequelize';
 import jwt from 'jsonwebtoken';
 import File from '../models/File';
+import Perfil from '../models/Perfil';
 import Usuario from '../models/Usuario';
 import Patologia from '../models/Patologia';
 import authConfig from '../../../src/config/auth';
@@ -11,7 +13,6 @@ class AlunoController {
     const qtdRegPag = 20;
 
     const usuarios = await Usuario.findAll({
-      where: { perfil_id: process.env.ALUNO },
       include: [
         {
           model: File,
@@ -23,6 +24,20 @@ class AlunoController {
           as: 'patologias',
           attributes: ['id', 'descricao'],
           through: { attributes: [] },
+        },
+        {
+          model: Perfil,
+          as: 'perfis',
+          attributes: [],
+          through: {
+            where: {
+              perfil_id: {
+                [Op.eq]: process.env.ALUNO,
+              },
+            },
+            required: true,
+            attributes: [],
+          },
         },
       ],
       order: ['nome'],

@@ -1,6 +1,8 @@
 import * as Yup from 'yup';
+import { Op } from 'sequelize';
 import jwt from 'jsonwebtoken';
 import File from '../models/File';
+import Perfil from '../models/Perfil';
 import Usuario from '../models/Usuario';
 import Modalidade from '../models/Modalidade';
 import authConfig from '../../../src/config/auth';
@@ -11,7 +13,7 @@ class ProfessorController {
     const qtdRegPag = 20;
 
     const professores = await Usuario.findAll({
-      where: { perfil_id: process.env.PROFESSOR },
+      // where: { perfil_id: process.env.PROFESSOR },
       include: [
         {
           model: Modalidade,
@@ -23,6 +25,20 @@ class ProfessorController {
           model: File,
           as: 'file',
           attributes: ['nome', 'path', 'url'],
+        },
+        {
+          model: Perfil,
+          as: 'perfis',
+          attributes: [],
+          through: {
+            where: {
+              perfil_id: {
+                [Op.eq]: process.env.PROFESSOR,
+              },
+            },
+            required: true,
+            attributes: [],
+          },
         },
       ],
       order: ['nome'],

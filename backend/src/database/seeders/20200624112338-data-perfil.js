@@ -12,6 +12,7 @@ module.exports = {
         { descricao: 'Admin', created_at: dataC, updated_at: dataC },
         { descricao: 'Professor', created_at: dataC, updated_at: dataC },
         { descricao: 'Aluno', created_at: dataC, updated_at: dataC },
+        { descricao: 'Atendente', created_at: dataC, updated_at: dataC },
       ],
       {}
     );
