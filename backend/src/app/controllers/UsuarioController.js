@@ -6,6 +6,9 @@ import File from '../models/File';
 import Perfil from '../models/Perfil';
 import Patologia from '../models/Patologia';
 import Modalidade from '../models/Modalidade';
+import FichaPadrao from '../models/FichaPadrao';
+
+import Database from '../../database';
 
 class UsuarioController {
   async index(req, res) {
@@ -60,25 +63,47 @@ class UsuarioController {
 
   async store(req, res) {
     const schema = Yup.object().shape({
-      nome: Yup.string().required(),
-      telefone: Yup.string().required(),
-      email: Yup.string().email().required(),
-      password: Yup.string().required().min(6),
-      perfis: Yup.array().required(),
+      nome: Yup.string().required('Campo nome requerido'),
+      telefone: Yup.string().required('Campo telefone requerido'),
+      email: Yup.string().email().required('Campo email requerido'),
+      password: Yup.string()
+        .required('Campo password requerido')
+        .min(6, 'Campo password possui menos de 6 digitos'),
+      confirmPassword: Yup.string().when('password', (password, field) =>
+        password
+          ? field
+              .required('Campo confirmPassword requerido')
+              .oneOf(
+                [Yup.ref('password')],
+                'Campo confirmPassword deve ser igual ao campo password'
+              )
+          : field
+      ),
+      perfis: Yup.array().required('Array numérico perfis requerido'),
       patologias: Yup.array().when(['perfis'], (perfis, field) =>
         perfis.indexOf(parseInt(process.env.ALUNO)) != -1
-          ? field.defined()
+          ? field.defined('Array numérico patologias não definido')
           : field
       ),
       modalidadesEnsino: Yup.array().when('perfis', (perfis, field) =>
         perfis.indexOf(parseInt(process.env.PROFESSOR)) != -1
-          ? field.defined()
+          ? field.defined('Array numérico modalidadesEnsino não definido')
           : field
       ),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      const validacao = { error: '' };
+      validacao.error = [];
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+      return res.status(400).json(validacao);
     }
 
     const usuarioExiste = await Usuario.findOne({
@@ -86,10 +111,23 @@ class UsuarioController {
     });
 
     if (usuarioExiste) {
-      return res.status(400).json({ error: 'Usuario already exists.' });
+      return res.status(400).json({ error: 'Usuario já existe!' });
     }
 
-    const { perfis, patologias, modalidadesEnsino, ...data } = req.body;
+    const {
+      perfis,
+      patologias,
+      modalidadesEnsino,
+      file_id,
+      ...data
+    } = req.body;
+
+    if (file_id) {
+      const file = await File.findByPk(file_id);
+      if (!file) {
+        return res.status(400).json({ error: 'File Informado não localizado' });
+      }
+    }
 
     if (perfis && perfis.length > 0) {
       for (const item of perfis) {
@@ -140,25 +178,47 @@ class UsuarioController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
-      nome: Yup.string().required(),
-      telefone: Yup.string().required(),
-      email: Yup.string().email().required(),
-      password: Yup.string().required().min(6),
-      perfis: Yup.array().required(),
+      nome: Yup.string().required('Campo nome requerido'),
+      telefone: Yup.string().required('Campo telefone requerido'),
+      email: Yup.string().email().required('Campo email requerido'),
+      password: Yup.string()
+        .required('Campo password requerido')
+        .min(6, 'Campo password possui menos de 6 digitos'),
+      confirmPassword: Yup.string().when('password', (password, field) =>
+        password
+          ? field
+              .required('Campo confirmPassword requerido')
+              .oneOf(
+                [Yup.ref('password')],
+                'Campo confirmPassword deve ser igual ao campo password'
+              )
+          : field
+      ),
+      perfis: Yup.array().required('Array numérico perfis requerido'),
       patologias: Yup.array().when(['perfis'], (perfis, field) =>
         perfis.indexOf(parseInt(process.env.ALUNO)) != -1
-          ? field.defined()
+          ? field.defined('Array numérico patologias não definido')
           : field
       ),
       modalidadesEnsino: Yup.array().when('perfis', (perfis, field) =>
         perfis.indexOf(parseInt(process.env.PROFESSOR)) != -1
-          ? field.defined()
+          ? field.defined('Array numérico modalidadesEnsino não definido')
           : field
       ),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      const validacao = { error: '' };
+      validacao.error = [];
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+      return res.status(400).json(validacao);
     }
 
     const {
@@ -167,6 +227,7 @@ class UsuarioController {
       patologias,
       modalidadesEnsino,
       perfis,
+      file_id,
     } = req.body;
 
     const usuario = await Usuario.findByPk(req.params.id);
@@ -186,6 +247,13 @@ class UsuarioController {
 
     if (oldPassword && !(await usuario.checkPassword(oldPassword))) {
       return res.status(401).json({ error: 'Senha não confirmada!' });
+    }
+
+    if (file_id) {
+      const file = await File.findByPk(file_id);
+      if (!file) {
+        return res.status(400).json({ error: 'File Informado não localizado' });
+      }
     }
 
     const { id, nome, password } = await usuario.update(req.body);
@@ -216,10 +284,38 @@ class UsuarioController {
     });
 
     if (!usuario) {
-      res.status(400).json('Usuario não encontrado!');
+      return res.status(400).json('Usuario não encontrado!');
     }
 
-    await usuario.destroy();
+    const fps = await FichaPadrao.findOne({
+      where: { professor_id: req.params.id },
+    });
+
+    if (fps) {
+      return res
+        .status(400)
+        .json('Usuário possui ficha padrão definida. não é possível excluir!');
+    }
+
+    const t = await Database.connection.transaction();
+    try {
+      const patologias = await usuario.getPatologias();
+      await usuario.removePatologias(patologias, { transaction: t });
+
+      const modalidadesEnsino = await usuario.getModalidadesEnsino();
+      await usuario.removeModalidadesEnsino(modalidadesEnsino, {
+        transaction: t,
+      });
+
+      const perfis = await usuario.getPerfis();
+      await usuario.removePerfis(perfis, { transaction: t });
+
+      await usuario.destroy({ transaction: t });
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      return res.status(500).send();
+    }
 
     return res.send();
   }
