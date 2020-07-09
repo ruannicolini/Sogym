@@ -13,7 +13,6 @@ class ProfessorController {
     const qtdRegPag = 20;
 
     const professores = await Usuario.findAll({
-      // where: { perfil_id: process.env.PROFESSOR },
       include: [
         {
           model: Modalidade,
@@ -50,42 +49,75 @@ class ProfessorController {
   }
 
   async store(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+    const perfis = [];
+
     const schema = Yup.object().shape({
-      nome: Yup.string().required(),
-      telefone: Yup.string().required(),
-      email: Yup.string().email().required(),
-      modalidadesEnsino: Yup.array().defined(),
-      password: Yup.string().required().min(6),
+      nome: Yup.string().required('Campo nome requerido'),
+      telefone: Yup.string().required('Campo telefone requerido'),
+      email: Yup.string().email().required('Campo email requerido'),
+      password: Yup.string()
+        .required('Campo password requerido')
+        .min(6, 'Campo password possui menos de 6 digitos'),
+      confirmPassword: Yup.string().when('password', (password, field) =>
+        password
+          ? field
+              .required('Campo confirmPassword requerido')
+              .oneOf(
+                [Yup.ref('password')],
+                'Campo confirmPassword deve ser igual ao campo password'
+              )
+          : field
+      ),
+      modalidadesEnsino: Yup.array().defined(
+        'Array numérico modalidadesEnsino não definido'
+      ),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    const { modalidadesEnsino, email } = req.body;
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
-    const usuarioExiste = await Usuario.findOne({
-      where: { email: req.body.email },
-    });
-
-    if (usuarioExiste) {
-      return res.status(400).json({ error: 'Usuario already exists.' });
+    if (email) {
+      const usuarioExiste = await Usuario.findOne({
+        where: { email },
+      });
+      if (usuarioExiste) {
+        validacao.error.push({ name: 'email', message: 'Usuário já existe!' });
+      }
     }
-
-    req.body.perfil_id = process.env.PROFESSOR;
-
-    const { modalidadesEnsino } = req.body;
 
     if (modalidadesEnsino && modalidadesEnsino.length > 0) {
       for (const item of req.body.modalidadesEnsino) {
         const modTeste = await Modalidade.findByPk(item);
         if (!modTeste) {
-          return res
-            .status(400)
-            .json({ error: 'Modalidade Informada não localizada' });
+          validacao.error.push({
+            name: 'modalidadesEnsino',
+            message: 'Modalidade COD ' + item + ' não localizada!',
+          });
         }
       }
     }
 
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
+
     const professorCriado = await Usuario.create(req.body);
+
+    perfis.push([process.env.PROFESSOR]);
+    professorCriado.setPerfis(perfis);
+
     if (modalidadesEnsino && modalidadesEnsino.length > 0) {
       professorCriado.setModalidadesEnsino(modalidadesEnsino);
     }

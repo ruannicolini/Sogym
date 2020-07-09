@@ -62,6 +62,9 @@ class UsuarioController {
   }
 
   async store(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const schema = Yup.object().shape({
       nome: Yup.string().required('Campo nome requerido'),
       telefone: Yup.string().required('Campo telefone requerido'),
@@ -81,38 +84,16 @@ class UsuarioController {
       ),
       perfis: Yup.array().required('Array numérico perfis requerido'),
       patologias: Yup.array().when(['perfis'], (perfis, field) =>
-        perfis.indexOf(parseInt(process.env.ALUNO)) != -1
+        perfis && perfis.indexOf(parseInt(process.env.ALUNO)) != -1
           ? field.defined('Array numérico patologias não definido')
           : field
       ),
       modalidadesEnsino: Yup.array().when('perfis', (perfis, field) =>
-        perfis.indexOf(parseInt(process.env.PROFESSOR)) != -1
+        perfis && perfis.indexOf(parseInt(process.env.PROFESSOR)) != -1
           ? field.defined('Array numérico modalidadesEnsino não definido')
           : field
       ),
     });
-
-    try {
-      const vb = await schema.validate(req.body, { abortEarly: false });
-    } catch (err) {
-      const validacao = { error: '' };
-      validacao.error = [];
-      err.inner.forEach((e) => {
-        validacao.error.push({
-          name: e.path,
-          message: e.message,
-        });
-      });
-      return res.status(400).json(validacao);
-    }
-
-    const usuarioExiste = await Usuario.findOne({
-      where: { email: req.body.email },
-    });
-
-    if (usuarioExiste) {
-      return res.status(400).json({ error: 'Usuario já existe!' });
-    }
 
     const {
       perfis,
@@ -122,10 +103,34 @@ class UsuarioController {
       ...data
     } = req.body;
 
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+    }
+
+    if (req.body.email) {
+      const usuarioExiste = await Usuario.findOne({
+        where: { email: req.body.email },
+      });
+
+      if (usuarioExiste) {
+        validacao.error.push({ name: 'email', message: 'Usuário já existe!' });
+      }
+    }
+
     if (file_id) {
       const file = await File.findByPk(file_id);
       if (!file) {
-        return res.status(400).json({ error: 'File Informado não localizado' });
+        validacao.error.push({
+          name: 'file',
+          message: 'File Informado não localizado!',
+        });
       }
     }
 
@@ -133,9 +138,10 @@ class UsuarioController {
       for (const item of perfis) {
         const perfilTeste = await Perfil.findByPk(item);
         if (!perfilTeste) {
-          return res
-            .status(400)
-            .json({ error: 'Perfil Informado não localizado' });
+          validacao.error.push({
+            name: 'perfis',
+            message: 'Perfil COD ' + item + ' não localizado!',
+          });
         }
       }
     }
@@ -144,9 +150,10 @@ class UsuarioController {
       for (const item of modalidadesEnsino) {
         const modTeste = await Modalidade.findByPk(item);
         if (!modTeste) {
-          return res
-            .status(400)
-            .json({ error: 'Modalidade Informada não localizada' });
+          validacao.error.push({
+            name: 'modalidadesEnsino',
+            message: 'Modalidade COD ' + item + ' não localizada!',
+          });
         }
       }
     }
@@ -155,14 +162,19 @@ class UsuarioController {
       for (const item of patologias) {
         const patTeste = await Patologia.findByPk(item);
         if (!patTeste) {
-          return res
-            .status(400)
-            .json({ error: 'Patologia Informada não localizada' });
+          validacao.error.push({
+            name: 'patologias',
+            message: 'Patologia COD ' + item + ' não localizada!',
+          });
         }
       }
     }
 
-    const usuarioCriado = await Usuario.create(data);
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
+
+    const usuarioCriado = await Usuario.create(req.body);
     if (perfis && perfis.length > 0) {
       usuarioCriado.setPerfis(perfis);
     }

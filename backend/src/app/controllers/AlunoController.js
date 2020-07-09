@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import Sequelize, { Op } from 'sequelize';
+import { Op } from 'sequelize';
 import jwt from 'jsonwebtoken';
 import File from '../models/File';
 import Perfil from '../models/Perfil';
@@ -49,33 +49,87 @@ class AlunoController {
   }
 
   async store(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+    const perfis = [];
+
     const schema = Yup.object().shape({
-      nome: Yup.string().required(),
-      telefone: Yup.string().required(),
-      patologias: Yup.array().defined(),
-      email: Yup.string().email().required(),
-      password: Yup.string().required().min(6),
+      nome: Yup.string().required('Campo nome requerido'),
+      telefone: Yup.string().required('Campo telefone requerido'),
+      email: Yup.string().email().required('Campo email requerido'),
+      password: Yup.string()
+        .required('Campo password requerido')
+        .min(6, 'Campo password possui menos de 6 digitos'),
+      confirmPassword: Yup.string().when('password', (password, field) =>
+        password
+          ? field
+              .required('Campo confirmPassword requerido')
+              .oneOf(
+                [Yup.ref('password')],
+                'Campo confirmPassword deve ser igual ao campo password'
+              )
+          : field
+      ),
+      patologias: Yup.array().defined('Array numérico patologias não definido'),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    const { patologias, file_id, email } = req.body;
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
-    const usuarioExiste = await Usuario.findOne({
-      where: { email: req.body.email },
-    });
-
-    if (usuarioExiste) {
-      return res.status(400).json({ error: 'Usuario already exists.' });
+    if (email) {
+      const usuarioExiste = await Usuario.findOne({
+        where: { email },
+      });
+      if (usuarioExiste) {
+        validacao.error.push({ name: 'email', message: 'Usuário já existe!' });
+      }
     }
 
-    req.body.perfil_id = process.env.ALUNO;
-    const { patologias } = req.body;
+    if (file_id) {
+      const file = await File.findByPk(file_id);
+      if (!file) {
+        validacao.error.push({
+          name: 'file',
+          message: 'File Informado não localizado!',
+        });
+      }
+    }
+
+    if (patologias && patologias.length > 0) {
+      for (const item of patologias) {
+        const patTeste = await Patologia.findByPk(item);
+        if (!patTeste) {
+          validacao.error.push({
+            name: 'patologias',
+            message: 'Patologia COD ' + item + ' não localizada!',
+          });
+        }
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
 
     const usuarioCriado = await Usuario.create(req.body);
+
+    perfis.push([process.env.ALUNO]);
+    usuarioCriado.setPerfis(perfis);
+
     if (patologias && patologias.length > 0) {
       usuarioCriado.setPatologias(patologias);
     }
+
     return res.json(usuarioCriado);
   }
 

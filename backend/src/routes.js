@@ -59,15 +59,15 @@ routes.post('/treino', TreinoController.store);
 routes.put('/treino/:id', TreinoController.update);
 routes.delete('/treino/:id', TreinoController.delete);
 
-routes.get('/modalidade', ModalidadeController.index);
-routes.post('/modalidade', ModalidadeController.store);
-routes.put('/modalidade/:id', ModalidadeController.update);
-routes.delete('/modalidade/:id', ModalidadeController.delete);
-
 routes.get('/exercicio', ExercicioController.index);
 routes.post('/exercicio', ExercicioController.store);
 routes.put('/exercicio/:id', ExercicioController.update);
 routes.delete('/exercicio/:id', ExercicioController.delete);
+
+routes.get('/modalidade', ModalidadeController.index);
+routes.post('/modalidade', ModalidadeController.store);
+routes.put('/modalidade/:id', ModalidadeController.update);
+routes.delete('/modalidade/:id', ModalidadeController.delete);
 
 routes.get('/ficha_padrao', FichaPadraoController.index);
 routes.post('/ficha_padrao', FichaPadraoController.store);
