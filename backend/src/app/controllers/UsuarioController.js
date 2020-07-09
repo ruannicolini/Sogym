@@ -189,6 +189,9 @@ class UsuarioController {
   }
 
   async update(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const schema = Yup.object().shape({
       nome: Yup.string().required('Campo nome requerido'),
       telefone: Yup.string().required('Campo telefone requerido'),
@@ -208,30 +211,16 @@ class UsuarioController {
       ),
       perfis: Yup.array().required('Array numérico perfis requerido'),
       patologias: Yup.array().when(['perfis'], (perfis, field) =>
-        perfis.indexOf(parseInt(process.env.ALUNO)) != -1
+        perfis && perfis.indexOf(parseInt(process.env.ALUNO)) != -1
           ? field.defined('Array numérico patologias não definido')
           : field
       ),
       modalidadesEnsino: Yup.array().when('perfis', (perfis, field) =>
-        perfis.indexOf(parseInt(process.env.PROFESSOR)) != -1
+        perfis && perfis.indexOf(parseInt(process.env.PROFESSOR)) != -1
           ? field.defined('Array numérico modalidadesEnsino não definido')
           : field
       ),
     });
-
-    try {
-      const vb = await schema.validate(req.body, { abortEarly: false });
-    } catch (err) {
-      const validacao = { error: '' };
-      validacao.error = [];
-      err.inner.forEach((e) => {
-        validacao.error.push({
-          name: e.path,
-          message: e.message,
-        });
-      });
-      return res.status(400).json(validacao);
-    }
 
     const {
       email,
@@ -242,33 +231,64 @@ class UsuarioController {
       file_id,
     } = req.body;
 
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+    }
+
     const usuario = await Usuario.findByPk(req.params.id);
-
     if (!usuario) {
-      return res.status(400).json({ error: 'Usuario não encontrado' });
-    }
-
-    if (!(email === usuario.email)) {
-      const userExists = await Usuario.findOne({ where: { email } });
-      if (userExists) {
-        return res
-          .status(400)
-          .json({ error: 'Email já vinculado a um usuário.' });
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Usuario ' + req.params.id + ' não encontrado!',
+      });
+    } else {
+      if (email) {
+        if (!(email === usuario.email)) {
+          const userExists = await Usuario.findOne({ where: { email } });
+          if (userExists) {
+            validacao.error.push({
+              name: 'email',
+              message: 'Email já vinculado a um usuário.',
+            });
+          }
+        }
       }
-    }
 
-    if (oldPassword && !(await usuario.checkPassword(oldPassword))) {
-      return res.status(401).json({ error: 'Senha não confirmada!' });
+      if (oldPassword && !(await usuario.checkPassword(oldPassword))) {
+        validacao.error.push({
+          name: 'oldPassword',
+          message: 'Campo oldPassword não confere com o Password atual no BD!',
+        });
+      }
     }
 
     if (file_id) {
       const file = await File.findByPk(file_id);
       if (!file) {
-        return res.status(400).json({ error: 'File Informado não localizado' });
+        validacao.error.push({
+          name: 'file_id',
+          message: 'File Informado não localizado!',
+        });
       }
     }
 
-    const { id, nome, password } = await usuario.update(req.body);
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
+
+    const {
+      id,
+      nome: nomeAtualizado,
+      password: passwordAtualizado,
+      email: emailAtualizado,
+    } = await usuario.update(req.body);
 
     if (perfis && perfis.length > 0) {
       usuario.setPerfis(perfis);
@@ -283,30 +303,42 @@ class UsuarioController {
     return res.json({
       usuario: {
         id,
-        nome,
-        email,
-        password,
+        nome: nomeAtualizado,
+        password: passwordAtualizado,
+        email: emailAtualizado,
       },
     });
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const usuario = await Usuario.findOne({
       where: { id: req.params.id },
     });
 
     if (!usuario) {
-      return res.status(400).json('Usuario não encontrado!');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Usuario ' + req.params.id + ' não encontrado!',
+      });
+    } else {
+      const fps = await FichaPadrao.findOne({
+        where: { professor_id: req.params.id },
+      });
+
+      if (fps) {
+        validacao.error.push({
+          name: 'param /:id',
+          message:
+            'Usuario possui ficha padrão definida. não é possível excluir!',
+        });
+      }
     }
 
-    const fps = await FichaPadrao.findOne({
-      where: { professor_id: req.params.id },
-    });
-
-    if (fps) {
-      return res
-        .status(400)
-        .json('Usuário possui ficha padrão definida. não é possível excluir!');
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     const t = await Database.connection.transaction();

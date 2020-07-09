@@ -51,7 +51,7 @@ class ProfessorController {
   async store(req, res) {
     const validacao = { error: '' };
     validacao.error = [];
-    const perfis = [];
+    const perfisUsuario = [];
 
     const schema = Yup.object().shape({
       nome: Yup.string().required('Campo nome requerido'),
@@ -75,7 +75,7 @@ class ProfessorController {
       ),
     });
 
-    const { modalidadesEnsino, email } = req.body;
+    const { modalidadesEnsino, email, file_id, perfis } = req.body;
 
     try {
       const vb = await schema.validate(req.body, { abortEarly: false });
@@ -97,6 +97,17 @@ class ProfessorController {
       }
     }
 
+    if (file_id) {
+      const file = await File.findByPk(file_id);
+      if (!file) {
+        validacao.error.push({
+          name: 'file_id',
+          message: 'File Informado não localizado!',
+        });
+      }
+    }
+    console.log('teste');
+
     if (modalidadesEnsino && modalidadesEnsino.length > 0) {
       for (const item of req.body.modalidadesEnsino) {
         const modTeste = await Modalidade.findByPk(item);
@@ -109,14 +120,22 @@ class ProfessorController {
       }
     }
 
+    if (perfis) {
+      validacao.error.push({
+        name: 'perfis',
+        message:
+          'Array numérico perfis definido. Na rotina incluir professor não é permitido alteração no perfil do usuario.',
+      });
+    }
+
     if (validacao.error.length > 0) {
       return res.status(400).json(validacao);
     }
 
     const professorCriado = await Usuario.create(req.body);
 
-    perfis.push([process.env.PROFESSOR]);
-    professorCriado.setPerfis(perfis);
+    perfisUsuario.push([process.env.PROFESSOR]);
+    professorCriado.setPerfis(perfisUsuario);
 
     if (modalidadesEnsino && modalidadesEnsino.length > 0) {
       professorCriado.setModalidadesEnsino(modalidadesEnsino);
@@ -126,49 +145,104 @@ class ProfessorController {
   }
 
   async update(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const schema = Yup.object().shape({
-      nome: Yup.string().required(),
-      telefone: Yup.string().required(),
-      email: Yup.string().email().required(),
-      modalidadesEnsino: Yup.array().defined(),
-      oldPassword: Yup.string().min(6),
+      nome: Yup.string().required('Campo nome requerido'),
+      telefone: Yup.string().required('Campo telefone requerido'),
+      email: Yup.string().email().required('Campo email requerido'),
+      modalidadesEnsino: Yup.array().defined(
+        'Array numérico modalidadesEnsino não definido'
+      ),
+      oldPassword: Yup.string().min(
+        6,
+        'Campo oldPassword possui menos de 6 digitos'
+      ),
       password: Yup.string()
-        .min(6)
+        .min(6, 'Campo password possui menos de 6 digitos')
         .when('oldPassword', (oldPassword, field) =>
-          oldPassword ? field.required() : field
+          oldPassword ? field.required('Campo oldPassword requerido') : field
         ),
+
       confirmPassword: Yup.string().when('password', (password, field) =>
-        password ? field.required().oneOf([Yup.ref('password')]) : field
+        password
+          ? field
+              .required('Campo confirmPassword requerido')
+              .oneOf(
+                [Yup.ref('password')],
+                'Campo confirmPassword deve ser igual ao campo password'
+              )
+          : field
       ),
     });
 
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    const { email, oldPassword, modalidadesEnsino, perfis } = req.body;
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
-    const { email, oldPassword, modalidadesEnsino } = req.body;
+    const usuario = await Usuario.findByPk(req.params.id);
+    if (!usuario) {
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Usuario ' + req.params.id + ' não encontrado!',
+      });
+    } else {
+      if (email) {
+        if (!(email === usuario.email)) {
+          const userExists = await Usuario.findOne({ where: { email } });
+          if (userExists) {
+            validacao.error.push({
+              name: 'email',
+              message: 'Email já vinculado a um usuário.',
+            });
+          }
+        }
+      }
 
-    const professor = await Usuario.findByPk(req.params.id);
+      const perfisUsuario = await usuario.getPerfis();
 
-    if (!professor) {
-      return res.status(400).json({ error: 'Usuario not found' });
-    }
+      var isProf = false;
+      await perfisUsuario.forEach((v) => {
+        if (v.id == process.env.PROFESSOR) {
+          isProf = true;
+        }
+      });
 
-    if (!(professor.perfil_id == process.env.PROFESSOR)) {
-      return res.status(401).json({ error: 'User is not a Professor' });
-    }
+      if (!isProf) {
+        validacao.error.push({
+          name: 'param /:id',
+          message: 'Usuário localizado não é um professor!',
+        });
+      }
 
-    if (!(email === professor.email)) {
-      const userExists = await Usuario.findOne({ where: { email } });
-      if (userExists) {
-        return res
-          .status(400)
-          .json({ error: 'Email já vinculado a um usuário.' });
+      if (oldPassword && !(await usuario.checkPassword(oldPassword))) {
+        validacao.error.push({
+          name: 'oldPassword',
+          message: 'Campo oldPassword não confere com o Password atual no BD!',
+        });
+      }
+
+      if (perfis) {
+        validacao.error.push({
+          name: 'perfis',
+          message:
+            'Array numérico perfis definido. Na rotina alterar professor não é permitido alteração no perfil do usuario.',
+        });
       }
     }
 
-    if (oldPassword && !(await professor.checkPassword(oldPassword))) {
-      return res.status(401).json({ error: 'Password does not match' });
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     if (modalidadesEnsino && modalidadesEnsino.length > 0) {
@@ -201,16 +275,46 @@ class ProfessorController {
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const usuario = await Usuario.findOne({
       where: { id: req.params.id },
     });
 
     if (!usuario) {
-      res.status(400).json('Usuario not found');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Usuario ' + req.params.id + ' não encontrado!',
+      });
+    } else {
+      const perfisUsuario = await usuario.getPerfis();
+
+      var isProf = false;
+      await perfisUsuario.forEach((v) => {
+        if (v.id == process.env.PROFESSOR) {
+          isProf = true;
+        }
+      });
+
+      if (perfisUsuario.length > 1) {
+        validacao.error.push({
+          name: 'param /:id',
+          message:
+            'Não é possível excluir! Usuario possui mais de um perfil de uso no sistema. Utilize a rotina de exclusão para usuários.',
+        });
+      }
+
+      if (!isProf) {
+        validacao.error.push({
+          name: 'param /:id',
+          message: 'Usuário localizado não é um professor!',
+        });
+      }
     }
 
-    if (!(usuario.perfil_id == process.env.PROFESSOR)) {
-      return res.status(401).json({ error: 'User is not a Professor' });
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     await usuario.destroy();
