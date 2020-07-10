@@ -370,12 +370,22 @@ class FichaPadraoController {
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const fp = await FichaPadrao.findOne({
       where: { id: req.params.id },
     });
 
     if (!fp) {
-      res.status(400).json('Ficha padrão não encontrado');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Ficha padrão não encontrado',
+      });
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     const t = await Database.connection.transaction();
