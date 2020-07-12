@@ -25,53 +25,100 @@ class EquipamentoController {
   }
 
   async store(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    const validacao = { error: '' };
+    validacao.error = [];
+
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
+    });
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
-    const equipamentoEncontrado = await Equipamento.findOne({
-      where: { descricao: req.body.descricao },
-    });
-    if (equipamentoEncontrado) {
-      return res.status(400).json({ error: 'Equipamento já existe.' });
+    if (req.body.descricao) {
+      const equipamentoEncontrado = await Equipamento.findOne({
+        where: { descricao: req.body.descricao },
+      });
+      if (equipamentoEncontrado) {
+        validacao.error.push({
+          name: 'descricao',
+          message: 'Equipamento já existe.',
+        });
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     const equipamento = await Equipamento.create(req.body);
+
     return res.json(equipamento);
   }
 
   async update(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    const validacao = { error: '' };
+    validacao.error = [];
+
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
+    });
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
     const { descricao } = req.body;
 
     const equipamento = await Equipamento.findByPk(req.params.id);
     if (!equipamento) {
-      return res.status(400).json({ error: 'Equipamento não encontrado.' });
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Equipamento não encontrado.',
+      });
+    } else {
+      if (descricao) {
+        if (!(descricao === equipamento.descricao)) {
+          const equipamentoExists = await Equipamento.findOne({
+            where: { descricao },
+          });
+
+          if (equipamentoExists) {
+            validacao.error.push({
+              name: 'descricao',
+              message: 'Já existe um equipamento com a descrição informada.',
+            });
+          }
+        }
+      }
     }
 
-    if (!(descricao === equipamento.descricao)) {
-      const equipamentoExists = await Equipamento.findOne({
-        where: { descricao },
-      });
-
-      if (equipamentoExists) {
-        return res.status(400).json({
-          error: 'Já existe um equipamento com a descrição informada.',
-        });
-      }
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     return res.json(await equipamento.update(req.body));
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const equipamento = await Equipamento.findOne({
       where: { id: req.params.id },
       include: [
@@ -84,11 +131,21 @@ class EquipamentoController {
     });
 
     if (!equipamento) {
-      res.status(400).json('Equipamento não encontrado');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Equipamento não encontrado.',
+      });
+    } else {
+      if (equipamento.exercicios.length) {
+        validacao.error.push({
+          name: 'param /:id',
+          message: 'Equipamento possui exercícios vinculados',
+        });
+      }
     }
 
-    if (equipamento.exercicios.length) {
-      res.status(400).json('Equipamento possui exercícios vinculados');
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     await equipamento.destroy();
