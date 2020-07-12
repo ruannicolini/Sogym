@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import Modalidade from '../models/Modalidade';
+import Exercicio from '../models/Exercicio';
 
 class ModalidadeController {
   async index(req, res) {
@@ -16,66 +17,141 @@ class ModalidadeController {
   }
 
   async store(req, res) {
-    const validador = {
-      descricao: Yup.string().required(),
-      valor: Yup.number().required().positive('Informe um número positivo.'),
-    };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
-    }
+    const validacao = { error: '' };
+    validacao.error = [];
 
-    const modalidadeEncontrada = await Modalidade.findOne({
-      where: { descricao: req.body.descricao },
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
+      valor: Yup.number()
+        .required('Campo valor requerido')
+        .positive('Informe um número positivo.'),
     });
-
-    if (modalidadeEncontrada) {
-      return res.status(400).json({ error: 'Modalidade já existe.' });
-    }
-
-    const modalidade = await Modalidade.create(req.body);
-    return res.json(modalidade);
-  }
-
-  async update(req, res) {
-    const validador = {
-      descricao: Yup.string().required(),
-      valor: Yup.number().required().positive('Informe um número positivo.'),
-    };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
-    }
 
     const { descricao } = req.body;
 
-    const modalidade = await Modalidade.findByPk(req.params.id);
-    if (!modalidade) {
-      return res.status(400).json({ error: 'Modalidade não encontrada.' });
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
-    if (!(descricao === modalidade.descricao)) {
-      const modalidadeExists = await Modalidade.findOne({
+    if (descricao) {
+      const modalidadeEncontrada = await Modalidade.findOne({
         where: { descricao },
       });
 
-      if (modalidadeExists) {
-        return res.status(400).json({
-          error: 'Já existe uma modalidade com a descrição informada.',
+      if (modalidadeEncontrada) {
+        validacao.error.push({
+          name: 'descricao',
+          message: 'Modalidade já existe.',
         });
       }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
+
+    return res.json(await Modalidade.create(req.body));
+  }
+
+  async update(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
+      valor: Yup.number()
+        .required('Campo valor requerido')
+        .positive('Informe um número positivo.'),
+    });
+
+    const { descricao } = req.body;
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+    }
+
+    const modalidade = await Modalidade.findByPk(req.params.id);
+    if (!modalidade) {
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Modalidade não encontrado.',
+      });
+    } else {
+      if (descricao) {
+        if (!(descricao === modalidade.descricao)) {
+          const modalidadeExists = await Modalidade.findOne({
+            where: { descricao },
+          });
+
+          if (modalidadeExists) {
+            validacao.error.push({
+              name: 'descricao',
+              message: 'Já existe uma modalidade com a descrição informada.',
+            });
+          }
+        }
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     return res.json(await modalidade.update(req.body));
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const modalidade = await Modalidade.findOne({
       where: { id: req.params.id },
     });
 
     if (!modalidade) {
-      res.status(400).json('Modalidade não encontrado');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Modalidade não encontrada.',
+      });
+    } else {
+      const profs = modalidade.getProfessores();
+      if (profs.length > 0) {
+        validacao.error.push({
+          name: 'param /:id',
+          message:
+            'Professores vinculados a modalidade. Não é possível excluir!',
+        });
+      }
+
+      const qtdExerc = await Exercicio.count({
+        where: { modalidade_id: req.params.id },
+      });
+
+      if (qtdExerc > 0) {
+        validacao.error.push({
+          name: 'param /:id',
+          message:
+            'Exercícios vinculados a modalidade. Não é possível excluir!',
+        });
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     await modalidade.destroy();
