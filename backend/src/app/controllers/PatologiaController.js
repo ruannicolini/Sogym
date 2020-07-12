@@ -17,54 +17,101 @@ class PatologiaController {
   }
 
   async store(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
-    }
+    const validacao = { error: '' };
+    validacao.error = [];
 
-    const patologiaEncontrada = await Patologia.findOne({
-      where: { descricao: req.body.descricao },
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
     });
-
-    if (patologiaEncontrada) {
-      return res.status(400).json({ error: 'Patologia já existe.' });
-    }
-
-    const patologia = await Patologia.create(req.body);
-    return res.json(patologia);
-  }
-
-  async update(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
-    }
 
     const { descricao } = req.body;
 
-    const patologia = await Patologia.findByPk(req.params.id);
-    if (!patologia) {
-      return res.status(400).json({ error: 'Patologia não encontrada.' });
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
-    if (!(descricao === patologia.descricao)) {
-      const patologiaExists = await Patologia.findOne({
+    if (descricao) {
+      const patologiaEncontrada = await Patologia.findOne({
         where: { descricao },
       });
 
-      if (patologiaExists) {
-        return res.status(400).json({
-          error: 'Já existe uma patologia com a descrição informada.',
+      if (patologiaEncontrada) {
+        validacao.error.push({
+          name: 'descricao',
+          message: 'Patologia já existe.',
         });
       }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
+
+    return res.json(await Patologia.create(req.body));
+  }
+
+  async update(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
+    });
+
+    const { descricao } = req.body;
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+    }
+
+    const patologia = await Patologia.findByPk(req.params.id);
+    if (!patologia) {
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Patologia não encontrada.',
+      });
+    } else {
+      if (descricao) {
+        if (!(descricao === patologia.descricao)) {
+          const patologiaExists = await Patologia.findOne({
+            where: { descricao },
+          });
+
+          if (patologiaExists) {
+            validacao.error.push({
+              name: 'descricao',
+              message: 'Já existe uma patologia com a descrição informada.',
+            });
+          }
+        }
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     return res.json(await patologia.update(req.body));
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const patologia = await Patologia.findOne({
       where: { id: req.params.id },
       include: [
@@ -77,11 +124,23 @@ class PatologiaController {
     });
 
     if (!patologia) {
-      res.status(400).json('Patologia não encontrada');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Patologia não encontrada.',
+      });
+    } else {
+      if (patologia.incidentes) {
+        if (patologia.incidentes.length) {
+          validacao.error.push({
+            name: 'param /:id',
+            message: 'Patologia esta associada a usuários.',
+          });
+        }
+      }
     }
 
-    if (patologia.incidentes.length) {
-      res.status(400).json('Patologia esta associada a usuários');
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     await patologia.destroy();
