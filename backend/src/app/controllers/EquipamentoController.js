@@ -50,7 +50,7 @@ class EquipamentoController {
       if (equipamentoEncontrado) {
         validacao.error.push({
           name: 'descricao',
-          message: 'Equipamento já existe.',
+          message: 'Já existe um equipamento com a descrição informada.',
         });
       }
     }
