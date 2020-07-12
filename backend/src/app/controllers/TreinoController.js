@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import Treino from '../models/Treino';
+import FichaPadraoExercicio from '../models/FichaPadraoExercicio';
 
 class TreinoController {
   async index(req, res) {
@@ -16,61 +17,126 @@ class TreinoController {
   }
 
   async store(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
-    }
+    const validacao = { error: '' };
+    validacao.error = [];
 
-    const treinoEncontrado = await Treino.findOne({
-      where: { descricao: req.body.descricao },
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
     });
-
-    if (treinoEncontrado) {
-      return res.status(400).json({ error: 'Treino já existe.' });
-    }
-
-    const treino = await Treino.create(req.body);
-
-    return res.json(treino);
-  }
-
-  async update(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
-    }
 
     const { descricao } = req.body;
 
-    const treino = await Treino.findByPk(req.params.id);
-    if (!treino) {
-      return res.status(400).json({ error: 'Treino não encontrado.' });
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
-    if (!(descricao === treino.descricao)) {
-      const treinoExists = await Treino.findOne({
+    if (descricao) {
+      const treinoEncontrado = await Treino.findOne({
         where: { descricao },
       });
 
-      if (treinoExists) {
-        return res.status(400).json({
-          error: 'Já existe um treino com a descrição informada.',
+      if (treinoEncontrado) {
+        validacao.error.push({
+          name: 'descricao',
+          message: 'Já existe um treino com a descrição informada.',
         });
       }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
+
+    return res.json(await Treino.create(req.body));
+  }
+
+  async update(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
+    });
+
+    const { descricao } = req.body;
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+    }
+
+    const treino = await Treino.findByPk(req.params.id);
+    if (!treino) {
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Treino não encontrado.',
+      });
+    } else {
+      if (descricao) {
+        if (!(descricao === treino.descricao)) {
+          const treinoExists = await Treino.findOne({
+            where: { descricao },
+          });
+
+          if (treinoExists) {
+            validacao.error.push({
+              name: 'descricao',
+              message: 'Já existe um treino com a descrição informada.',
+            });
+          }
+        }
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     return res.json(await treino.update(req.body));
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const treino = await Treino.findOne({
       where: { id: req.params.id },
     });
 
     if (!treino) {
-      res.status(400).json('Treino não encontrado');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Treino não encontrado',
+      });
+    } else {
+      const qtdFp = await FichaPadraoExercicio.count({
+        where: { treino_id: req.params.id },
+      });
+
+      if (qtdFp > 0) {
+        validacao.error.push({
+          name: 'param /:id',
+          message:
+            'Treino já associado a ficha de exercícios. Não é possível excluir!',
+        });
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     await treino.destroy();
