@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
 import Grupo from '../models/Grupo';
+import Exercicio from '../models/Exercicio';
 
 class GrupoController {
   async index(req, res) {
@@ -16,62 +17,124 @@ class GrupoController {
   }
 
   async store(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
-    }
+    const validacao = { error: '' };
+    validacao.error = [];
 
-    const grupoEncontrado = await Grupo.findOne({
-      where: { descricao: req.body.descricao },
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
     });
 
-    if (grupoEncontrado) {
-      return res.status(400).json({ error: 'Grupo já existe.' });
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
+    }
+
+    if (req.body.descricao) {
+      const grupoEncontrado = await Grupo.findOne({
+        where: { descricao: req.body.descricao },
+      });
+
+      if (grupoEncontrado) {
+        validacao.error.push({
+          name: 'descricao',
+          message: 'Já existe um grupo com a descrição informada.',
+        });
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     const grupo = await Grupo.create(req.body);
+
     return res.json(grupo);
   }
 
   async update(req, res) {
-    const validador = { descricao: Yup.string().required() };
-    const schema = Yup.object().shape(validador);
-    if (!(await schema.isValid(req.body))) {
-      return res.status(400).json({ error: 'Validation Fails' });
+    const validacao = { error: '' };
+    validacao.error = [];
+
+    const schema = Yup.object().shape({
+      descricao: Yup.string().required('Campo descricao requerido'),
+    });
+
+    try {
+      const vb = await schema.validate(req.body, { abortEarly: false });
+    } catch (err) {
+      err.inner.forEach((e) => {
+        validacao.error.push({
+          name: e.path,
+          message: e.message,
+        });
+      });
     }
 
     const { descricao } = req.body;
 
     const grupo = await Grupo.findByPk(req.params.id);
     if (!grupo) {
-      return res.status(400).json({ error: 'Grupo não encontrado.' });
-    }
-
-    if (!(descricao === grupo.descricao)) {
-      const grupoExists = await Grupo.findOne({
-        where: { descricao },
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Grupo não encontrado.',
       });
+    } else {
+      if (descricao) {
+        if (!(descricao === grupo.descricao)) {
+          const grupoExists = await Grupo.findOne({
+            where: { descricao },
+          });
 
-      if (grupoExists) {
-        return res.status(400).json({
-          error: 'Já existe um grupo com a descrição informada.',
-        });
+          if (grupoExists) {
+            validacao.error.push({
+              name: 'descricao',
+              message: 'Já existe um grupo com a descrição informada.',
+            });
+          }
+        }
       }
     }
 
-    await grupo.update(req.body);
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
+    }
 
-    return res.json(grupo);
+    return res.json(await grupo.update(req.body));
   }
 
   async delete(req, res) {
+    const validacao = { error: '' };
+    validacao.error = [];
+
     const grupo = await Grupo.findOne({
       where: { id: req.params.id },
     });
 
     if (!grupo) {
-      res.status(400).json('Grupo não encontrado');
+      validacao.error.push({
+        name: 'param /:id',
+        message: 'Grupo não encontrado',
+      });
+    } else {
+      const exercicios = await Exercicio.findAll({
+        where: { grupoExercicio_id: req.params.id },
+      });
+      if (exercicios.length) {
+        validacao.error.push({
+          name: 'param /:id',
+          message: 'Grupo possui exercícios vinculados',
+        });
+      }
+    }
+
+    if (validacao.error.length > 0) {
+      return res.status(400).json(validacao);
     }
 
     await grupo.destroy();
