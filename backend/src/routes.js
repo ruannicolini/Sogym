@@ -27,8 +27,6 @@ routes.post('/usuario', UsuarioController.store);
 routes.put('/usuario/:id', UsuarioController.update);
 routes.delete('/usuario/:id', UsuarioController.delete);
 
-routes.post('/file', upload.single('file'), FileController.store);
-
 routes.get('/aluno', AlunoController.index);
 routes.post('/aluno', AlunoController.store);
 routes.put('/aluno/:id', AlunoController.update);
@@ -38,6 +36,8 @@ routes.get('/professor', ProfessorController.index);
 routes.post('/professor', ProfessorController.store);
 routes.put('/professor/:id', ProfessorController.update);
 routes.delete('/professor/:id', ProfessorController.delete);
+
+routes.post('/file', upload.single('file'), FileController.store);
 
 routes.get('/equipamento', EquipamentoController.index);
 routes.post('/equipamento', EquipamentoController.store);

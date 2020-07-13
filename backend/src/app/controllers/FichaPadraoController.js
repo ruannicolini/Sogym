@@ -16,6 +16,7 @@ class FichaPadraoController {
     const qtdRegPag = 20;
 
     const fichas = await FichaPadrao.findAll({
+      where: { professor_id: req.usuarioId },
       attributes: ['id', 'descricao'],
       include: [
         {
@@ -59,7 +60,6 @@ class FichaPadraoController {
     const schema = Yup.object().shape({
       descricao: Yup.string().required('Campo descricao requerido'),
       modalidade_id: Yup.number().required('Campo modalidade_id requerido'),
-      professor_id: Yup.number().required('Campo professor_id requerido'),
       ficha: Yup.array().required('Campo ficha requerido'),
     });
 
@@ -101,30 +101,39 @@ class FichaPadraoController {
     }
 
     if (req.body.professor_id) {
-      const professor = await Usuario.findOne({
-        where: { id: req.body.professor_id },
+      validacao.error.push({
+        name: 'professor_id',
+        message:
+          'Não é necessário definir o campo professor_id. Este campo é localizado pelo token logado.',
       });
-
-      if (!professor) {
-        validacao.error.push({
-          name: 'professor_id',
-          message: 'Professor não localizado',
-        });
-      } else {
-        const perfisUsuario = await professor.getPerfis();
-
-        var isProf = false;
-        await perfisUsuario.forEach((v) => {
-          if (v.id == process.env.PROFESSOR) {
-            isProf = true;
-          }
+    } else {
+      req.body.professor_id = req.usuarioId;
+      if (req.body.professor_id) {
+        const professor = await Usuario.findOne({
+          where: { id: req.body.professor_id },
         });
 
-        if (!isProf) {
+        if (!professor) {
           validacao.error.push({
-            name: 'param /:id',
-            message: 'Usuário localizado não é um professor!',
+            name: 'professor_id',
+            message: 'Professor não localizado',
           });
+        } else {
+          const perfisUsuario = await professor.getPerfis();
+
+          var isProf = false;
+          await perfisUsuario.forEach((v) => {
+            if (v.id == process.env.PROFESSOR) {
+              isProf = true;
+            }
+          });
+
+          if (!isProf) {
+            validacao.error.push({
+              name: 'token',
+              message: 'Usuário logado não é um professor!',
+            });
+          }
         }
       }
     }
@@ -178,6 +187,8 @@ class FichaPadraoController {
       return res.status(400).json(validacao);
     }
 
+    req.body.ativo = true;
+
     const fichaCriada = await FichaPadrao.create(req.body);
 
     for (const item of req.body.ficha) {
@@ -202,9 +213,11 @@ class FichaPadraoController {
     const schema = Yup.object().shape({
       descricao: Yup.string().required('Campo descricao requerido'),
       modalidade_id: Yup.number().required('Campo modalidade_id requerido'),
-      professor_id: Yup.number().required('Campo professor_id requerido'),
       ficha: Yup.array().required('Campo ficha requerido'),
+      ativo: Yup.boolean().required('Campo ativo requerido'),
     });
+
+    const { descricao } = req.body;
 
     try {
       const vb = await schema.validate(req.body, { abortEarly: false });
@@ -217,6 +230,14 @@ class FichaPadraoController {
       });
     }
 
+    if (req.body.professor_id) {
+      validacao.error.push({
+        name: 'professor_id',
+        message:
+          'Não é necessário definir o campo professor_id. Este campo é localizado pelo token logado.',
+      });
+    }
+
     const fpEncontrada = await FichaPadrao.findByPk(req.params.id, {
       include: [{ model: Exercicio, as: 'exercicios' }],
     });
@@ -225,24 +246,27 @@ class FichaPadraoController {
         name: 'param /:id',
         message: 'Ficha padrão não encontrada',
       });
-    }
-
-    const { descricao } = req.body;
-
-    console.log(descricao);
-
-    if (descricao) {
-      console.log(fpEncontrada.descricao);
-      if (!(descricao === fpEncontrada.descricao)) {
-        const fpExists = await FichaPadrao.findOne({
-          where: { descricao },
+    } else {
+      if (fpEncontrada.professor_id != req.usuarioId) {
+        validacao.error.push({
+          name: 'token',
+          message:
+            'Para alterar a ficha é necessário logar como o usuário que a criou',
         });
+      }
 
-        if (fpExists) {
-          validacao.error.push({
-            name: 'descricao',
-            message: 'Já existe uma ficha padrão com a descrição informada.',
+      if (descricao) {
+        if (!(descricao === fpEncontrada.descricao)) {
+          const fpExists = await FichaPadrao.findOne({
+            where: { descricao },
           });
+
+          if (fpExists) {
+            validacao.error.push({
+              name: 'descricao',
+              message: 'Já existe uma ficha padrão com a descrição informada.',
+            });
+          }
         }
       }
     }
@@ -260,34 +284,34 @@ class FichaPadraoController {
       }
     }
 
-    if (req.body.professor_id) {
-      const professor = await Usuario.findOne({
-        where: { id: req.body.professor_id },
-      });
+    // if (req.body.professor_id) {
+    //   const professor = await Usuario.findOne({
+    //     where: { id: req.body.professor_id },
+    //   });
 
-      if (!professor) {
-        validacao.error.push({
-          name: 'professor_id',
-          message: 'Professor não localizado',
-        });
-      } else {
-        const perfisUsuario = await professor.getPerfis();
+    //   if (!professor) {
+    //     validacao.error.push({
+    //       name: 'professor_id',
+    //       message: 'Professor não localizado',
+    //     });
+    //   } else {
+    //     const perfisUsuario = await professor.getPerfis();
 
-        var isProf = false;
-        await perfisUsuario.forEach((v) => {
-          if (v.id == process.env.PROFESSOR) {
-            isProf = true;
-          }
-        });
+    //     var isProf = false;
+    //     await perfisUsuario.forEach((v) => {
+    //       if (v.id == process.env.PROFESSOR) {
+    //         isProf = true;
+    //       }
+    //     });
 
-        if (!isProf) {
-          validacao.error.push({
-            name: 'param /:id',
-            message: 'Usuário localizado não é um professor!',
-          });
-        }
-      }
-    }
+    //     if (!isProf) {
+    //       validacao.error.push({
+    //         name: 'param /:id',
+    //         message: 'Usuário localizado não é um professor!',
+    //       });
+    //     }
+    //   }
+    // }
 
     if (req.body.ficha) {
       for (const item of req.body.ficha) {
@@ -379,9 +403,17 @@ class FichaPadraoController {
 
     if (!fp) {
       validacao.error.push({
-        name: 'param /:id',
+        name: 'token',
         message: 'Ficha padrão não encontrado',
       });
+    } else {
+      if (fp.professor_id != req.usuarioId) {
+        validacao.error.push({
+          name: 'professor_id',
+          message:
+            'Para excluir a ficha é necessário logar como o usuário que a criou',
+        });
+      }
     }
 
     if (validacao.error.length > 0) {
