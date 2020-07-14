@@ -24,7 +24,7 @@ class ExercicioController {
         },
         {
           model: Equipamento,
-          as: 'Equipamentos',
+          as: 'equipamentos',
           attributes: ['id', 'descricao'],
           through: { attributes: [] },
         },

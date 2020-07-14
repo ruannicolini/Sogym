@@ -22,7 +22,7 @@ class Exercicio extends Model {
 
     this.belongsToMany(models.Equipamento, {
       through: 'equipamento_exercicio',
-      as: 'Equipamentos',
+      as: 'equipamentos',
     });
 
     this.belongsToMany(models.FichaPadrao, {

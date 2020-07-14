@@ -43,6 +43,19 @@ class FichaAlunoController {
               attributes: ['id', 'descricao', 'modo_execucao'],
               include: [
                 { model: Grupo, as: 'grupo', attributes: ['id', 'descricao'] },
+                {
+                  model: Equipamento,
+                  as: 'equipamentos',
+                  attributes: ['id', 'descricao'],
+                  through: { attributes: [] },
+                  include: [
+                    {
+                      model: File,
+                      as: 'file',
+                      attributes: ['id', 'descricao'],
+                    },
+                  ],
+                },
               ],
             },
             { model: Treino, attributes: ['id', 'descricao'] },
