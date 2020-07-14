@@ -1,5 +1,8 @@
 node_modules/
-**/node_modules
+.env
 .lock
-**/tmp
+**/node_modules
+**/tmp/*
+!**/tmp/.gitkeep
+
 

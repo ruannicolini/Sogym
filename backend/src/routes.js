@@ -12,6 +12,7 @@ import ProfessorController from './app/controllers/ProfessorController';
 import AlunoController from './app/controllers/AlunoController';
 import FileController from './app/controllers/FileController';
 import FichaPadraoController from './app/controllers/FichaPadraoController';
+import FichaAlunoController from './app/controllers/FichaAlunoController';
 import SessionController from './app/controllers/SessionController';
 import authMiddlewares from './app/middlewares/auth';
 
@@ -73,5 +74,10 @@ routes.get('/ficha_padrao', FichaPadraoController.index);
 routes.post('/ficha_padrao', FichaPadraoController.store);
 routes.put('/ficha_padrao/:id', FichaPadraoController.update);
 routes.delete('/ficha_padrao/:id', FichaPadraoController.delete);
+
+routes.get('/ficha_aluno/:id', FichaAlunoController.index);
+routes.post('/ficha_aluno', FichaAlunoController.store);
+routes.put('/ficha_aluno/:id', FichaAlunoController.update);
+routes.delete('/ficha_aluno/:id', FichaAlunoController.delete);
 
 export default routes;

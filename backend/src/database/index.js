@@ -11,6 +11,8 @@ import Treino from '../app/models/Treino';
 import Exercicio from '../app/models/Exercicio';
 import FichaPadrao from '../app/models/FichaPadrao';
 import FichaPadraoExercicio from '../app/models/FichaPadraoExercicio';
+import FichaAluno from '../app/models/FichaAluno';
+import FichaAlunoExercicio from '../app/models/FichaAlunoExercicio';
 
 const models = [
   File,
@@ -24,6 +26,8 @@ const models = [
   Equipamento,
   Exercicio,
   FichaPadraoExercicio,
+  FichaAluno,
+  FichaAlunoExercicio,
 ];
 
 class Database {
