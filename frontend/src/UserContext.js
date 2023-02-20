@@ -24,7 +24,8 @@ export const UserStorageProvider = ({children}) => {
         try {
 			setError(null);
 			setLoading(true);
-			const { url, options } = TOKEN_POST({ username, password });
+			const { url, options } = TOKEN_POST({ email: username, password });
+			// const { url, options } = TOKEN_POST({ username, password });
 			const tokenRes = await fetch(url, options);
 			if (!tokenRes.ok) throw new Error(`Error: Usuário ou senha inválido.`);
 			const { token } = await tokenRes.json();
