@@ -173,3 +173,43 @@ export function EQUIPAMENTOS_GET(token) {
     }
   }
 }
+
+export function EQUIPAMENTOS_DELETE(id, token) {
+  return {
+    url: `${API_SOGYM_URL}/equipamento/${id}`,
+    options: {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    },
+  };
+}
+
+export function EQUIPAMENTOS_POST(body, token) {
+  return {
+    url: `${API_SOGYM_URL}/equipamento`,
+    options: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(body),
+    },
+  };
+}
+
+export function EQUIPAMENTOS_PUT(id, body, token) {
+  return {
+    url: `${API_SOGYM_URL}/equipamento/${id}`,
+    options: {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(body),
+    },
+  };
+}
