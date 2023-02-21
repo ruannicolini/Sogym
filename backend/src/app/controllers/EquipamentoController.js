@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import Sequelize, { Op } from 'sequelize';
 import Equipamento from '../models/Equipamento';
 import Exercicio from '../models/Exercicio';
 import File from '../models/File';
@@ -44,9 +45,16 @@ class EquipamentoController {
     }
 
     if (req.body.descricao) {
+
+      // const equipamentoEncontrado = await Equipamento.findOne({
+      //   where: { descricao: req.body.descricao },
+      // });
       const equipamentoEncontrado = await Equipamento.findOne({
-        where: { descricao: req.body.descricao },
+        where: {
+          $and: Sequelize.where(Sequelize.fn('lower', Sequelize.col('descricao')), Sequelize.fn('lower', req.body.descricao))
+        },
       });
+
       if (equipamentoEncontrado) {
         validacao.error.push({
           name: 'descricao',
