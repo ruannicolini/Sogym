@@ -20,7 +20,6 @@ const Equipamento = () => {
     propsRef.current = gridRef && gridRef.current;
 
     const [activeIndex, setActiveIndex] = React.useState(null);
-    const [activeEditItemId, setActiveEditItemId] = React.useState(null);
 
     /* Form items */
     const descricao = useForm();
@@ -71,7 +70,6 @@ const Equipamento = () => {
     function handleEditarClick({target}){
         clearFormItems();
         setModalForm('Editar');
-        setActiveEditItemId(Number(target.dataset.id))
     }
     async function handleSalvarClick({target}){
 
@@ -83,7 +81,8 @@ const Equipamento = () => {
                 setEquipamentoData([...equipamentoData, json]);
             }
         } else if(modalForm === 'Editar'){
-            const idEdit = activeEditItemId;
+            const currentItem = propsRef.current.getItemAt(activeIndex);
+            const idEdit = currentItem.id;
             const token = window.localStorage.getItem('token');
             const { url, options } = EQUIPAMENTOS_PUT( idEdit, { descricao: descricao.value } , token);
             const { response, json } = await request(url, options);
@@ -95,7 +94,6 @@ const Equipamento = () => {
                       return item;
                     }
                 }));
-                setActiveEditItemId(null);
             }
         }
 
