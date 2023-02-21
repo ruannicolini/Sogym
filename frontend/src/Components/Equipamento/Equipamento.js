@@ -8,6 +8,7 @@ import Button from '../Forms/Button';
 import ModalForm from './../Helper/ModalForm';
 import Input from '../Forms/Input';
 import useForm from "../../Hooks/useForm";
+import Error from '../Helper/Error';
 
 const Equipamento = () => {
 
@@ -161,9 +162,13 @@ const Equipamento = () => {
                     limit={20}
                     showColumnMenuTool={false}
                     defaultSortingDirection="asc"
+                    loading={loading}
+                    loadingText={<b>Buscando dados ... </b>}
                 />
 
                 <Button onClick={handleNovoClick} style={{ marginTop: '20px', marginBottom: '20px', marginLeft: 'auto', fontWeight: 'bold' }}>Novo</Button>
+
+                <Error error={error} />
 
             </div>
 

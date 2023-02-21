@@ -98,3 +98,7 @@ a {
 .VictoryContainer {
     height: initial !important;
 }
+
+.inovua-react-toolkit-load-mask.inovua-react-toolkit-load-mask--theme-default-light .inovua-react-toolkit-load-mask__loader--svg .inovua-react-toolkit-load-mask__loader-spinner {
+    background-image: conic-gradient(from 90deg,#e3e3e3,#ffbb11 .99turn,#e3e3e3);
+}
