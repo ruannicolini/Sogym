@@ -20,7 +20,6 @@ const Equipamento = () => {
     propsRef.current = gridRef && gridRef.current;
 
     const [activeIndex, setActiveIndex] = React.useState(null);
-    const [activeRowData, setActiveRowData] = React.useState(null);
     const [activeEditItemId, setActiveEditItemId] = React.useState(null);
 
     /* Form items */
@@ -46,13 +45,10 @@ const Equipamento = () => {
         descricao.setValue('');
     }
     function loadModalData(){
-
-        console.log("activeRowData ==", activeRowData);
-        console.log("activeIndex ==", activeIndex);
-        
         if(modalForm === 'Editar'){
-            if(activeRowData && activeRowData.descricao){
-                descricao.setValue(activeRowData.descricao);
+            const item = propsRef.current.getItemAt(activeIndex);
+            if(item){
+                descricao.setValue(item.descricao);
             }
         }
     }
@@ -92,8 +88,13 @@ const Equipamento = () => {
             const { url, options } = EQUIPAMENTOS_PUT( idEdit, { descricao: descricao.value } , token);
             const { response, json } = await request(url, options);
             if(response && response.ok){
-                const newDataList = equipamentoData.filter((item) => item.id !== Number(idEdit));
-                setEquipamentoData([...newDataList, json]);
+                setEquipamentoData(equipamentoData.map(item => {
+                    if (item.id === json.id) {
+                      return { ...item, ...json };
+                    } else {
+                      return item;
+                    }
+                }));
                 setActiveEditItemId(null);
             }
         }
@@ -104,10 +105,11 @@ const Equipamento = () => {
     
     const onActiveIndexChange = React.useCallback((index) => {
         if(index !== -1){
-            const item = propsRef.current.getItemAt(index);
-            const rowId = propsRef.current.getItemId(item);
-            setActiveIndex(index);
-            setActiveRowData(item);
+            if(propsRef){
+                // const item = propsRef.current.getItemAt(index);
+                // const rowId = propsRef.current.getItemId(item);
+                setActiveIndex(index);
+            }
         }
     }, []);
 
@@ -149,6 +151,7 @@ const Equipamento = () => {
                 <ReactDataGrid
                     activeIndex={activeIndex}
                     onActiveIndexChange={onActiveIndexChange}
+                    defaultActiveIndex={0}
                     onReady={setGridRef}
 
                     idProperty="id"
