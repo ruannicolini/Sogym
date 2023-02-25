@@ -128,7 +128,34 @@ class ExercicioController {
       exerc.setEquipamentos(equipamentos);
     }
 
-    return res.json(exerc);
+    // return with associations
+    const exercicioRetorno = await Exercicio.findOne({
+      include: [
+        {
+          model: Grupo,
+          as: 'grupo',
+          attributes: ['id', 'descricao'],
+        },
+        {
+          model: Modalidade,
+          as: 'modalidade',
+          attributes: ['id', 'descricao'],
+        },
+        {
+          model: Equipamento,
+          as: 'equipamentos',
+          attributes: ['id', 'descricao'],
+          through: { attributes: [] },
+        },
+      ],
+      where: { id: exerc.id },
+    });
+
+    if (equipamentos && equipamentos.length > 0) {
+      exercicioRetorno.setEquipamentos(equipamentos);
+    }
+
+    return res.json(exercicioRetorno);
   }
 
   async update(req, res) {
@@ -232,7 +259,35 @@ class ExercicioController {
       exerc.setEquipamentos(equipamentos);
     }
 
-    return res.json(exerc);
+    // return with associations
+    const exercicioRetorno = await Exercicio.findOne({
+      include: [
+        {
+          model: Grupo,
+          as: 'grupo',
+          attributes: ['id', 'descricao'],
+        },
+        {
+          model: Modalidade,
+          as: 'modalidade',
+          attributes: ['id', 'descricao'],
+        },
+        {
+          model: Equipamento,
+          as: 'equipamentos',
+          attributes: ['id', 'descricao'],
+          through: { attributes: [] },
+        },
+      ],
+      where: { id: exerc.id },
+    });
+
+    if (equipamentos && equipamentos.length > 0) {
+      exercicioRetorno.setEquipamentos(equipamentos);
+    }
+
+    return res.json(exercicioRetorno);
+
   }
 
   async delete(req, res) {

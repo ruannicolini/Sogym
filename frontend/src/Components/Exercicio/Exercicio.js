@@ -3,7 +3,7 @@ import ReactDataGrid from '@inovua/reactdatagrid-community';
 import '@inovua/reactdatagrid-community/index.css';
 import Head from '../Helper/Head';
 import useFetch from "./../../Hooks/useFetch";
-import { EXERCICIOS_GET, EXERCICIOS_DELETE, EQUIPAMENTOS_POST, EQUIPAMENTOS_PUT, GRUPOS_GET } from "./../../api";
+import { EXERCICIOS_GET, EXERCICIOS_DELETE, EXERCICIO_POST, EXERCICIO_PUT, GRUPOS_GET } from "./../../api";
 import Button from '../Forms/Button';
 import ModalForm from './../Helper/ModalForm';
 import Input from '../Forms/Input';
@@ -58,6 +58,10 @@ const Exercicio = () => {
             }
         }
         fetchExercicios();
+
+        //Default modalidade
+        modalidade.setValue(1);
+
     }, []);
     
     React.useEffect( () => {
@@ -89,6 +93,8 @@ const Exercicio = () => {
                 modalidade.setValue(item.modalidade.id);
                 setGrupo(item.grupo.id);
             }
+        }else if(modalForm === 'Novo'){
+            modalidade.setValue(1); //default modalidade
         }
     }
     async function handleRemoverClick({target}){
@@ -113,41 +119,52 @@ const Exercicio = () => {
     }
     async function handleSalvarClick({target}){
 
-        // try {
+        try {
 
-        //     if(modalForm === 'Novo'){
-        //         const token = window.localStorage.getItem('token');
-        //         const { url, options } = EQUIPAMENTOS_POST( { descricao: descricao.value } , token);
-        //         const { response, json } = await requestModalData(url, options);
-        //         if(response && response.ok){
-        //             setExercicioData([...exercicioData, json]);
-        //             setModalForm(null);
-        //         }
-        //     } else if(modalForm === 'Editar'){
-        //         const currentItem = propsRef.current.getItemAt(activeIndex);
-        //         const idEdit = currentItem.id;
-        //         const token = window.localStorage.getItem('token');
-        //         const { url, options } = EQUIPAMENTOS_PUT( idEdit, { descricao: descricao.value } , token);
-        //         const { response, json } = await requestModalData(url, options);
-        //         if(response && response.ok){
-        //             setExercicioData(exercicioData.map(item => {
-        //                 if (item.id === json.id) {
-        //                   return { ...item, ...json };
-        //                 } else {
-        //                   return item;
-        //                 }
-        //             }));
-        //             setModalForm(null);
-        //         }
-        //     }
+            if(modalForm === 'Novo'){
+                const token = window.localStorage.getItem('token');
+                const { url, options } = EXERCICIO_POST( { 
+                    modalidade_id: modalidade.value,
+                    descricao: descricao.value,
+                    modo_execucao: modoExecucao.value,
+                    grupoExercicio_id: grupo,
+                    equipamentos: []
+                } , token);
+                const { response, json } = await requestModalData(url, options);
+                if(response && response.ok){
+                    setExercicioData([...exercicioData, json]);
+                    setModalForm(null);
+                }
+            } else if(modalForm === 'Editar'){
+                const currentItem = propsRef.current.getItemAt(activeIndex);
+                const idEdit = currentItem.id;
+                const token = window.localStorage.getItem('token');
+                const { url, options } = EXERCICIO_PUT( idEdit, { 
+                    modalidade_id: modalidade.value,
+                    descricao: descricao.value,
+                    modo_execucao: modoExecucao.value,
+                    grupoExercicio_id: grupo,
+                    equipamentos: []
+                } , token);
+                const { response, json } = await requestModalData(url, options);
+                if(response && response.ok){
+                    setExercicioData(exercicioData.map(item => {
+                        if (item.id === json.id) {
+                          return { ...item, ...json };
+                        } else {
+                          return item;
+                        }
+                    }));
+                    setModalForm(null);
+                }
+            }
 
-        // } catch(e){
-        //     console.log("error ==== ", e);
-        // }
+        } catch(e){
+            console.log("error ==== ", e);
+        }
 
     }
 
-    
     const onActiveIndexChange = React.useCallback((index) => {
         if(index !== -1){
             if(propsRef){

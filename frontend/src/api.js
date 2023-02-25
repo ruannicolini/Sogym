@@ -239,6 +239,34 @@ export function EXERCICIOS_DELETE(id, token) {
   };
 }
 
+export function EXERCICIO_POST(body, token) {
+  return {
+    url: `${API_SOGYM_URL}/exercicio`,
+    options: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(body),
+    },
+  };
+}
+
+export function EXERCICIO_PUT(id, body, token) {
+  return {
+    url: `${API_SOGYM_URL}/exercicio/${id}`,
+    options: {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(body),
+    },
+  };
+}
+
 export function GRUPOS_GET(token) {
   return {
     url: API_SOGYM_URL + '/grupo',
