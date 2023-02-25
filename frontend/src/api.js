@@ -238,3 +238,16 @@ export function EXERCICIOS_DELETE(id, token) {
     },
   };
 }
+
+export function GRUPOS_GET(token) {
+  return {
+    url: API_SOGYM_URL + '/grupo',
+    options: {
+      method: 'GET',
+      headers: {
+        Authorization: "Bearer " + token,
+        
+      },
+    }
+  }
+}

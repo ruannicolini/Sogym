@@ -3,12 +3,13 @@ import ReactDataGrid from '@inovua/reactdatagrid-community';
 import '@inovua/reactdatagrid-community/index.css';
 import Head from '../Helper/Head';
 import useFetch from "./../../Hooks/useFetch";
-import { EXERCICIOS_GET, EXERCICIOS_DELETE, EQUIPAMENTOS_POST, EQUIPAMENTOS_PUT } from "./../../api";
+import { EXERCICIOS_GET, EXERCICIOS_DELETE, EQUIPAMENTOS_POST, EQUIPAMENTOS_PUT, GRUPOS_GET } from "./../../api";
 import Button from '../Forms/Button';
 import ModalForm from './../Helper/ModalForm';
 import Input from '../Forms/Input';
 import useForm from "../../Hooks/useForm";
 import Error from '../Helper/Error';
+import Select from '../Forms/Select';
 
 const Exercicio = () => {
 
@@ -19,6 +20,8 @@ const Exercicio = () => {
     const [exercicioDataAdapter, setExercicioDataAdapter] = React.useState([]);
     const [modalForm, setModalForm] = React.useState(null);
 
+    const [grupoMuscular, setgrupoMuscular] = React.useState([]); // for the select component
+
     const [gridRef, setGridRef] = React.useState(null)
     const propsRef = React.useRef(null);
     propsRef.current = gridRef && gridRef.current;
@@ -27,10 +30,23 @@ const Exercicio = () => {
 
     /* Form items */
     const descricao = useForm();
-    //const modalidade = useForm();
-    const grupo = useForm();
+    const modalidade = useForm();
+    const [grupo, setGrupo] = React.useState({});
     const modoExecucao = useForm();
     /* End - Form items */
+
+    React.useEffect( () => {
+
+        async function fetchGrupos () {
+            const token = window.localStorage.getItem('token');
+            const { url, options } = GRUPOS_GET(token);
+            const { response, json } = await request(url, options);
+            if(response && response.ok){
+                setgrupoMuscular(json);
+            }
+        }
+        fetchGrupos();
+    }, []);
 
     React.useEffect( () => {
         async function fetchExercicios () {
@@ -58,16 +74,22 @@ const Exercicio = () => {
     }, [exercicioData]);
 
     function clearFormItems(){
-        // descricao.setValue('');
+        descricao.setValue('');
+        modoExecucao.setValue('');
+        modalidade.setValue('');
+        setGrupo({});
     }
     function loadModalData(){
-        // clearError();
-        // if(modalForm === 'Editar'){
-        //     const item = propsRef.current.getItemAt(activeIndex);
-        //     if(item){
-        //         descricao.setValue(item.descricao);
-        //     }
-        // }
+        clearError();
+        if(modalForm === 'Editar'){
+            const item = propsRef.current.getItemAt(activeIndex);
+            if(item){
+                descricao.setValue(item.descricao);
+                modoExecucao.setValue(item.modo_execucao);
+                modalidade.setValue(item.modalidade.id);
+                setGrupo(item.grupo.id);
+            }
+        }
     }
     async function handleRemoverClick({target}){
         if( window.confirm("Deseja remover o item?")){
@@ -168,7 +190,9 @@ const Exercicio = () => {
             <Head title = "Exercicios" />
 
             { (modalForm != null) ? <ModalForm setModalForm={setModalForm} modalForm={modalForm} handleSalvarClick={handleSalvarClick} loadModalData={loadModalData} error={errorModalData}>
-                {/* <Input label="Exercicio" type="text" name="nome" {...descricao} /> */}
+                <Input label="Exercício" type="text" name="nome" {...descricao} />
+                <Input label="Modo de Execução" type="text" name="modo" {...modoExecucao} />
+                <Select label="Grupo" name="grupo" value={grupo} setValue={setGrupo} options={grupoMuscular} />
             </ModalForm> : ''}
 
             <div>
