@@ -3,7 +3,7 @@ import ReactDataGrid from '@inovua/reactdatagrid-community';
 import '@inovua/reactdatagrid-community/index.css';
 import Head from '../Helper/Head';
 import useFetch from "./../../Hooks/useFetch";
-import { EXERCICIOS_GET, EQUIPAMENTOS_DELETE, EQUIPAMENTOS_POST, EQUIPAMENTOS_PUT } from "./../../api";
+import { EXERCICIOS_GET, EXERCICIOS_DELETE, EQUIPAMENTOS_POST, EQUIPAMENTOS_PUT } from "./../../api";
 import Button from '../Forms/Button';
 import ModalForm from './../Helper/ModalForm';
 import Input from '../Forms/Input';
@@ -70,16 +70,16 @@ const Exercicio = () => {
         // }
     }
     async function handleRemoverClick({target}){
-        // if( window.confirm("Deseja remover o item?")){
-        //     const idDelete = target.dataset.id;
-        //     const token = window.localStorage.getItem('token');
-        //     const { url, options } = EQUIPAMENTOS_DELETE(idDelete, token);
-        //     const { response, json } = await request(url, options);
-        //     if(response && response.ok){
-        //         const newData = exercicioData.filter((item) => item.id !== Number(idDelete));
-        //         setExercicioData(newData);
-        //     }
-        // }
+        if( window.confirm("Deseja remover o item?")){
+            const idDelete = target.dataset.id;
+            const token = window.localStorage.getItem('token');
+            const { url, options } = EXERCICIOS_DELETE(idDelete, token);
+            const { response, json } = await request(url, options);
+            if(response && response.ok){
+                const newData = exercicioData.filter((item) => item.id !== Number(idDelete));
+                setExercicioData(newData);
+            }
+        }
     }
     function handleNovoClick({target}){
         clearFormItems();

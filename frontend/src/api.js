@@ -226,3 +226,15 @@ export function EXERCICIOS_GET(token) {
     }
   }
 }
+
+export function EXERCICIOS_DELETE(id, token) {
+  return {
+    url: `${API_SOGYM_URL}/exercicio/${id}`,
+    options: {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    },
+  };
+}

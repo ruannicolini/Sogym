@@ -264,7 +264,7 @@ class ExercicioController {
 
     await exercicio.destroy();
 
-    return res.send();
+    return res.send({});
   }
 }
 export default new ExercicioController();
