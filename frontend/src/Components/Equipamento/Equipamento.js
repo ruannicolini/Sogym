@@ -12,7 +12,9 @@ import Error from '../Helper/Error';
 
 const Equipamento = () => {
 
-    const {data, loading, error, request } = useFetch();
+    const {data, loading, error, request } = useFetch(); // datagrid
+    const {data: dataModalData, loading: loadingModalData, error: errorModalData, request: requestModalData, clearError } = useFetch(); // modal
+    
     const [equipamentoData, setEquipamentoData] = React.useState([]);
     const [modalForm, setModalForm] = React.useState(null);
 
@@ -45,6 +47,7 @@ const Equipamento = () => {
         descricao.setValue('');
     }
     function loadModalData(){
+        clearError();
         if(modalForm === 'Editar'){
             const item = propsRef.current.getItemAt(activeIndex);
             if(item){
@@ -74,31 +77,38 @@ const Equipamento = () => {
     }
     async function handleSalvarClick({target}){
 
-        if(modalForm === 'Novo'){
-            const token = window.localStorage.getItem('token');
-            const { url, options } = EQUIPAMENTOS_POST( { descricao: descricao.value } , token);
-            const { response, json } = await request(url, options);
-            if(response && response.ok){
-                setEquipamentoData([...equipamentoData, json]);
+        try {
+
+            if(modalForm === 'Novo'){
+                const token = window.localStorage.getItem('token');
+                const { url, options } = EQUIPAMENTOS_POST( { descricao: descricao.value } , token);
+                const { response, json } = await requestModalData(url, options);
+                if(response && response.ok){
+                    setEquipamentoData([...equipamentoData, json]);
+                    setModalForm(null);
+                }
+            } else if(modalForm === 'Editar'){
+                const currentItem = propsRef.current.getItemAt(activeIndex);
+                const idEdit = currentItem.id;
+                const token = window.localStorage.getItem('token');
+                const { url, options } = EQUIPAMENTOS_PUT( idEdit, { descricao: descricao.value } , token);
+                const { response, json } = await requestModalData(url, options);
+                if(response && response.ok){
+                    setEquipamentoData(equipamentoData.map(item => {
+                        if (item.id === json.id) {
+                          return { ...item, ...json };
+                        } else {
+                          return item;
+                        }
+                    }));
+                    setModalForm(null);
+                }
             }
-        } else if(modalForm === 'Editar'){
-            const currentItem = propsRef.current.getItemAt(activeIndex);
-            const idEdit = currentItem.id;
-            const token = window.localStorage.getItem('token');
-            const { url, options } = EQUIPAMENTOS_PUT( idEdit, { descricao: descricao.value } , token);
-            const { response, json } = await request(url, options);
-            if(response && response.ok){
-                setEquipamentoData(equipamentoData.map(item => {
-                    if (item.id === json.id) {
-                      return { ...item, ...json };
-                    } else {
-                      return item;
-                    }
-                }));
-            }
+
+        } catch(e){
+            console.log("error ==== ", e);
         }
 
-        setModalForm(null);
     }
 
     
@@ -141,7 +151,7 @@ const Equipamento = () => {
 
             <Head title = "Equipamentos" />
 
-            { (modalForm != null) ? <ModalForm setModalForm={setModalForm} modalForm={modalForm} handleSalvarClick={handleSalvarClick} loadModalData={loadModalData}>
+            { (modalForm != null) ? <ModalForm setModalForm={setModalForm} modalForm={modalForm} handleSalvarClick={handleSalvarClick} loadModalData={loadModalData} error={errorModalData}>
                 <Input label="Equipamento" type="text" name="nome" {...descricao} />
             </ModalForm> : ''}
 

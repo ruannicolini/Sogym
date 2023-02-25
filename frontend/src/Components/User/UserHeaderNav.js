@@ -47,7 +47,7 @@ const UserHeaderNav = () => {
 				</NavLink>
 				<NavLink to="/conta/equipamento" end >
 					<AdicionarFoto />
-					{mobile && "equipamento"}
+					{mobile && "Equipamento"}
 				</NavLink>
 				<NavLink to="/conta/ficha" end >
 					<AdicionarFoto />

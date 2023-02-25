@@ -158,7 +158,7 @@ class EquipamentoController {
 
     await equipamento.destroy();
 
-    return res.send();
+    return res.send({});
   }
 }
 export default new EquipamentoController();
