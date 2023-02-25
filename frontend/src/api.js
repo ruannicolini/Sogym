@@ -213,3 +213,16 @@ export function EQUIPAMENTOS_PUT(id, body, token) {
     },
   };
 }
+
+export function EXERCICIOS_GET(token) {
+  return {
+    url: API_SOGYM_URL + '/exercicio',
+    options: {
+      method: 'GET',
+      headers: {
+        Authorization: "Bearer " + token,
+        
+      },
+    }
+  }
+}
