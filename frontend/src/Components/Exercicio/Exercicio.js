@@ -101,6 +101,7 @@ const Exercicio = () => {
         modoExecucao.setValue('');
         modalidade.setValue('');
         setGrupo({});
+        setEquipamentos([]);
     }
     function loadModalData(){
         clearError();
@@ -111,6 +112,11 @@ const Exercicio = () => {
                 modoExecucao.setValue(item.modo_execucao);
                 modalidade.setValue(item.modalidade.id);
                 setGrupo(item.grupo.id);
+                
+                const equipIds = item.equipamentos.map(item => {
+                    return item.id
+                });
+                setEquipamentos(equipIds);
             }
         }else if(modalForm === 'Novo'){
             modalidade.setValue(1); //default modalidade
@@ -147,7 +153,7 @@ const Exercicio = () => {
                     descricao: descricao.value,
                     modo_execucao: modoExecucao.value,
                     grupoExercicio_id: grupo,
-                    equipamentos: []
+                    equipamentos: equipamentos
                 } , token);
                 const { response, json } = await requestModalData(url, options);
                 if(response && response.ok){
@@ -163,7 +169,7 @@ const Exercicio = () => {
                     descricao: descricao.value,
                     modo_execucao: modoExecucao.value,
                     grupoExercicio_id: grupo,
-                    equipamentos: []
+                    equipamentos: equipamentos
                 } , token);
                 const { response, json } = await requestModalData(url, options);
                 if(response && response.ok){
