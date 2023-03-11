@@ -3,13 +3,14 @@ import ReactDataGrid from '@inovua/reactdatagrid-community';
 import '@inovua/reactdatagrid-community/index.css';
 import Head from '../Helper/Head';
 import useFetch from "./../../Hooks/useFetch";
-import { EXERCICIOS_GET, EXERCICIOS_DELETE, EXERCICIO_POST, EXERCICIO_PUT, GRUPOS_GET } from "./../../api";
+import { EXERCICIOS_GET, EXERCICIOS_DELETE, EXERCICIO_POST, EXERCICIO_PUT, GRUPOS_GET, EQUIPAMENTOS_GET } from "./../../api";
 import Button from '../Forms/Button';
 import ModalForm from './../Helper/ModalForm';
 import Input from '../Forms/Input';
 import useForm from "../../Hooks/useForm";
 import Error from '../Helper/Error';
 import Select from '../Forms/Select';
+import Multiselect from '../Forms/Multiselect';
 
 const Exercicio = () => {
 
@@ -21,6 +22,7 @@ const Exercicio = () => {
     const [modalForm, setModalForm] = React.useState(null);
 
     const [grupoMuscular, setgrupoMuscular] = React.useState([]); // for the select component
+    const [equipamentosDisponiveis, setEquipamentosDisponiveis] = React.useState([]); // for the select component
 
     const [gridRef, setGridRef] = React.useState(null)
     const propsRef = React.useRef(null);
@@ -32,8 +34,25 @@ const Exercicio = () => {
     const descricao = useForm();
     const modalidade = useForm();
     const [grupo, setGrupo] = React.useState({});
+    const [equipamentos, setEquipamentos] = React.useState([]);
     const modoExecucao = useForm();
     /* End - Form items */
+
+    React.useEffect( () => {
+        async function fetchEquipamentos () {
+            const token = window.localStorage.getItem('token');
+            const { url, options } = EQUIPAMENTOS_GET(token);
+            const { response, json } = await request(url, options);
+            if(response && response.ok){
+                setEquipamentosDisponiveis(json.map(item => {
+                    return {
+                        value: item.id, label: item.descricao
+                    };
+                }));
+            }
+        }
+        fetchEquipamentos();
+    }, []);
 
     React.useEffect( () => {
 
@@ -210,6 +229,7 @@ const Exercicio = () => {
                 <Input label="Exercício" type="text" name="nome" {...descricao} />
                 <Input label="Modo de Execução" type="text" name="modo" {...modoExecucao} />
                 <Select label="Grupo" name="grupo" value={grupo} setValue={setGrupo} options={grupoMuscular} />
+                <Multiselect label="Equipamentos" name="equipamentos" value={equipamentos} setValue={setEquipamentos} options={equipamentosDisponiveis} />
             </ModalForm> : ''}
 
             <div>
