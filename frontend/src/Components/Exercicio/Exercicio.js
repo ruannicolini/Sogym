@@ -22,7 +22,7 @@ const Exercicio = () => {
     const [modalForm, setModalForm] = React.useState(null);
 
     const [grupoMuscular, setgrupoMuscular] = React.useState([]); // for the select component
-    const [equipamentosDisponiveis, setEquipamentosDisponiveis] = React.useState([]); // for the select component
+    const [equipamentosDisponiveis, setEquipamentosDisponiveis] = React.useState([]); // for the multiselect component
 
     const [gridRef, setGridRef] = React.useState(null)
     const propsRef = React.useRef(null);
@@ -106,18 +106,7 @@ const Exercicio = () => {
     function loadModalData(){
         clearError();
         if(modalForm === 'Editar'){
-            const item = propsRef.current.getItemAt(activeIndex);
-            if(item){
-                descricao.setValue(item.descricao);
-                modoExecucao.setValue(item.modo_execucao);
-                modalidade.setValue(item.modalidade.id);
-                setGrupo(item.grupo.id);
-                
-                const equipIds = item.equipamentos.map(item => {
-                    return item.id
-                });
-                setEquipamentos(equipIds);
-            }
+            //
         }else if(modalForm === 'Novo'){
             modalidade.setValue(1); //default modalidade
         }
@@ -139,7 +128,6 @@ const Exercicio = () => {
         setModalForm('Novo');
     }
     function handleEditarClick({target}){
-        clearFormItems();
         setModalForm('Editar');
     }
     async function handleSalvarClick({target}){
@@ -190,12 +178,28 @@ const Exercicio = () => {
 
     }
 
+    const updateStatesFromDatagrid = (index) => {
+        const item = propsRef.current.getItemAt(index);
+        if(item){
+            descricao.setValue(item.descricao);
+            modoExecucao.setValue(item.modo_execucao);
+            modalidade.setValue(item.modalidade.id);
+            setGrupo(item.grupo.id);
+            
+            const equipIds = item.equipamentos.map(item => {
+                return item.id
+            });
+            setEquipamentos(equipIds);
+        }
+    }
+
     const onActiveIndexChange = React.useCallback((index) => {
         if(index !== -1){
             if(propsRef){
                 // const item = propsRef.current.getItemAt(index);
                 // const rowId = propsRef.current.getItemId(item);
                 setActiveIndex(index);
+                updateStatesFromDatagrid(index);
             }
         }
     }, []);
@@ -229,7 +233,7 @@ const Exercicio = () => {
 
         <section>
 
-            <Head title = "Exercicios" />
+            <Head title = "Exercícios" />
 
             { (modalForm != null) ? <ModalForm setModalForm={setModalForm} modalForm={modalForm} handleSalvarClick={handleSalvarClick} loadModalData={loadModalData} error={errorModalData}>
                 <Input label="Exercício" type="text" name="nome" {...descricao} />
@@ -244,7 +248,15 @@ const Exercicio = () => {
                     activeIndex={activeIndex}
                     onActiveIndexChange={onActiveIndexChange}
                     defaultActiveIndex={0}
-                    onReady={setGridRef}
+
+                    // onReady={setGridRef}
+                    handle={setGridRef}
+
+                    onReady={ () => {
+                        setTimeout(() => {
+                            updateStatesFromDatagrid(0);
+                        }, 1000);
+                    } }
 
                     idProperty="id"
                     columns={columns}

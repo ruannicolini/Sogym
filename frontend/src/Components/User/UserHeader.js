@@ -24,7 +24,7 @@ function UserHeader() {
 				setTitle("Fichas");
 			break;
 			case "/conta/exercicio":
-				setTitle("Exercicios");
+				setTitle("Exercícios");
 			break;
 			default:
 				setTitle("Minha conta");
