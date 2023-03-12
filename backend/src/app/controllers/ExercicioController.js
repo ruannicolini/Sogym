@@ -256,7 +256,7 @@ class ExercicioController {
 
     const exerc = await exercicio.update(req.body);
     if (equipamentos && equipamentos.length > 0) {
-      exerc.setEquipamentos(equipamentos);
+      await exerc.setEquipamentos(equipamentos);
     }
 
     // return with associations
@@ -283,7 +283,7 @@ class ExercicioController {
     });
 
     if (equipamentos && equipamentos.length > 0) {
-      exercicioRetorno.setEquipamentos(equipamentos);
+      await exercicioRetorno.setEquipamentos(equipamentos);
     }
 
     return res.json(exercicioRetorno);
