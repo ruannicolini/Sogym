@@ -255,7 +255,7 @@ class ExercicioController {
     }
 
     const exerc = await exercicio.update(req.body);
-    if (equipamentos && equipamentos.length > 0) {
+    if (equipamentos) {
       await exerc.setEquipamentos(equipamentos);
     }
 
@@ -282,7 +282,7 @@ class ExercicioController {
       where: { id: exerc.id },
     });
 
-    if (equipamentos && equipamentos.length > 0) {
+    if (equipamentos) {
       await exercicioRetorno.setEquipamentos(equipamentos);
     }
 
